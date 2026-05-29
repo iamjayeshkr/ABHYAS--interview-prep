@@ -48,9 +48,8 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
         content: currentMessageText
     });
 
-    // Blazing-fast prioritization: Paid Llama 3.1 8B Instruct is placed at the top for sub-second, highly throughput-driven execution
+    // Blazing-fast 100% free prioritization: Lightweight Llama 3.2 3B Instruct free model is placed at the top for high-speed free execution
     const candidateModels = [
-        'meta-llama/llama-3.1-8b-instruct',
         'meta-llama/llama-3.2-3b-instruct:free',
         'meta-llama/llama-3.3-70b-instruct:free',
         'deepseek/deepseek-v4-flash:free',
