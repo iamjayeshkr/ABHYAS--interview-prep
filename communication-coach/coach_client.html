@@ -1177,7 +1177,7 @@ aside.collapsed { display: none; }
             };
 
             try {
-                const response = await fetch('http://localhost:5001/api/coach/log', {
+                const response = await fetch('/api/coach/log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(logData)
@@ -1192,7 +1192,7 @@ aside.collapsed { display: none; }
                     document.getElementById('timer').innerText = "00:00";
                 }
             } catch (err) {
-                alert("⚠️ Error saving practice session to local server backend. Make sure 'node server.js' is running!");
+                alert("⚠️ Error saving practice session to server backend. Make sure Express server is running!");
             }
         }
 
@@ -1211,7 +1211,7 @@ aside.collapsed { display: none; }
 
                 let history = [];
                 try {
-                    const response = await fetch('http://localhost:5001/api/coach/history');
+                    const response = await fetch('/api/coach/history');
                     const data = await response.json();
                     history = data.history || [];
                 } catch (e) {

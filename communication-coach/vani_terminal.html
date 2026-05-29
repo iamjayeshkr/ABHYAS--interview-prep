@@ -833,22 +833,23 @@ Type a command or ask a question to start. For example:
             <button class="dialog-close" onclick="closeApiKeyModal()">×</button>
         </div>
         <div class="security-notice">
-            🛡️ <strong>100% Local & Secure:</strong> Credentials are stored only in your local browser storage and sent directly to Google SDK or your local Ollama daemon. They are never saved on our servers.
+            🛡️ <strong>100% Local & Secure:</strong> Credentials are stored only in your local browser storage and sent directly to Google SDK or OpenRouter. They are never saved on our servers.
         </div>
         <div class="input-group">
             <label class="input-label" for="userApiKeyInput">Gemini API Key</label>
             <div class="input-wrapper">
                 <input type="password" id="userApiKeyInput" class="key-input" placeholder="AIzaSy..." autocomplete="off">
-                <button type="button" class="btn-toggle-visibility" onclick="toggleKeyVisibility()" title="Toggle Visibility">👁️</button>
+                <button type="button" class="btn-toggle-visibility" id="btnToggleGeminiVisibility" onclick="toggleKeyVisibility()" title="Toggle Visibility">👁️</button>
             </div>
         </div>
         <div class="input-group" style="margin-top: 8px;">
-            <label class="input-label" for="ollamaEndpointInput">Ollama Fallback URL (Local / Tunnel)</label>
+            <label class="input-label" for="openRouterKeyInput">OpenRouter API Key (Cloud Fallback)</label>
             <div class="input-wrapper">
-                <input type="text" id="ollamaEndpointInput" class="key-input" placeholder="http://localhost:11434" autocomplete="off" style="font-family: inherit;">
+                <input type="password" id="openRouterKeyInput" class="key-input" placeholder="sk-or-v1-..." autocomplete="off">
+                <button type="button" class="btn-toggle-visibility" id="btnToggleOpenRouterVisibility" onclick="toggleOpenRouterVisibility()" title="Toggle Visibility">👁️</button>
             </div>
             <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
-                💡 Defaults to <code>http://localhost:11434</code> locally. For Vercel, run <code>ngrok http 11434</code> on your Mac and paste the secure HTTPS tunnel URL here to keep Qwen active in the cloud!
+                💡 <strong>100% Cloud-Based:</strong> Enter your personal OpenRouter API Key to run <code>qwen2.5:3b</code> (or Llama 3) for free directly in the cloud. No local models or active ngrok tunnels needed!
             </div>
         </div>
         <div class="dialog-actions" style="margin-top: 16px;">
@@ -1053,7 +1054,7 @@ Type a command or ask a question to start. For example:
 
                 try {
                     const userApiKey = localStorage.getItem('abhyas_user_api_key') || '';
-                    const ollamaEndpoint = localStorage.getItem('abhyas_ollama_endpoint') || 'http://localhost:11434';
+                    const openRouterKey = localStorage.getItem('abhyas_user_openrouter_key') || '';
                     
                     const headers = { 
                         'Content-Type': 'application/json'
@@ -1061,8 +1062,8 @@ Type a command or ask a question to start. For example:
                     if (userApiKey) {
                         headers['x-api-key'] = userApiKey;
                     }
-                    if (ollamaEndpoint) {
-                        headers['x-ollama-endpoint'] = ollamaEndpoint;
+                    if (openRouterKey) {
+                        headers['x-openrouter-key'] = openRouterKey;
                     }
 
                     const response = await fetch('/api/abhyas/chat', {
@@ -1297,24 +1298,27 @@ Type a command or ask a question to start. For example:
         });
 
         // ---------------------------------------------------------------------
-        // Gemini API Key Dialog Handlers
+        // Gemini & OpenRouter API Key Dialog Handlers
         // ---------------------------------------------------------------------
         const apiKeyModal = document.getElementById('apiKeyModal');
         const userApiKeyInput = document.getElementById('userApiKeyInput');
-        const ollamaEndpointInput = document.getElementById('ollamaEndpointInput');
+        const openRouterKeyInput = document.getElementById('openRouterKeyInput');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
         const btnClearKey = document.getElementById('btnClearKey');
 
         function openApiKeyModal() {
             const currentKey = localStorage.getItem('abhyas_user_api_key') || '';
-            const currentOllama = localStorage.getItem('abhyas_ollama_endpoint') || 'http://localhost:11434';
+            const currentOpenRouter = localStorage.getItem('abhyas_user_openrouter_key') || '';
             userApiKeyInput.value = currentKey;
-            ollamaEndpointInput.value = currentOllama;
-            userApiKeyInput.type = 'password';
-            document.querySelector('.btn-toggle-visibility').textContent = '👁️';
+            openRouterKeyInput.value = currentOpenRouter;
             
-            // Show/hide Clear button in modal
-            if (currentKey) {
+            userApiKeyInput.type = 'password';
+            openRouterKeyInput.type = 'password';
+            document.getElementById('btnToggleGeminiVisibility').textContent = '👁️';
+            document.getElementById('btnToggleOpenRouterVisibility').textContent = '👁️';
+            
+            // Show/hide Clear button in modal if either key exists
+            if (currentKey || currentOpenRouter) {
                 btnClearKey.style.display = 'block';
             } else {
                 btnClearKey.style.display = 'none';
@@ -1328,7 +1332,7 @@ Type a command or ask a question to start. For example:
         }
 
         function toggleKeyVisibility() {
-            const btn = document.querySelector('.btn-toggle-visibility');
+            const btn = document.getElementById('btnToggleGeminiVisibility');
             if (userApiKeyInput.type === 'password') {
                 userApiKeyInput.type = 'text';
                 btn.textContent = '🙈';
@@ -1338,14 +1342,42 @@ Type a command or ask a question to start. For example:
             }
         }
 
+        function toggleOpenRouterVisibility() {
+            const btn = document.getElementById('btnToggleOpenRouterVisibility');
+            if (openRouterKeyInput.type === 'password') {
+                openRouterKeyInput.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                openRouterKeyInput.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
         function saveApiKey() {
-            const rawKey = userApiKeyInput.value.trim();
-            if (!rawKey) {
-                alert("Please enter a valid API key, or click 'Clear Key' to remove it.");
+            const rawGemini = userApiKeyInput.value.trim();
+            const rawOpenRouter = openRouterKeyInput.value.trim();
+
+            if (!rawGemini && !rawOpenRouter) {
+                alert("Please enter at least one active API key (Gemini or OpenRouter), or click 'Clear All' to reset.");
                 return;
             }
 
-            localStorage.setItem('abhyas_user_api_key', rawKey);
+            let logMessage = "[SYSTEM]: ";
+
+            if (rawGemini) {
+                localStorage.setItem('abhyas_user_api_key', rawGemini);
+                logMessage += "Gemini API Key active. ";
+            } else {
+                localStorage.removeItem('abhyas_user_api_key');
+            }
+
+            if (rawOpenRouter) {
+                localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter);
+                logMessage += "OpenRouter cloud fallback active.";
+            } else {
+                localStorage.removeItem('abhyas_user_openrouter_key');
+            }
+
             updateApiKeyBtnState();
             closeApiKeyModal();
 
@@ -1353,14 +1385,17 @@ Type a command or ask a question to start. For example:
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--success)';
-            notifyDiv.innerHTML = `[SYSTEM]: Custom Gemini API Key has been configured and is active for this session.`;
+            notifyDiv.innerHTML = logMessage;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
         function clearApiKey() {
             localStorage.removeItem('abhyas_user_api_key');
+            localStorage.removeItem('abhyas_user_openrouter_key');
             userApiKeyInput.value = '';
+            openRouterKeyInput.value = '';
+            
             updateApiKeyBtnState();
             closeApiKeyModal();
 
@@ -1368,19 +1403,27 @@ Type a command or ask a question to start. For example:
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--accent-secondary)';
-            notifyDiv.innerHTML = `[SYSTEM]: Custom API Key removed. Reverting to server credentials or simulated mode.`;
+            notifyDiv.innerHTML = `[SYSTEM]: All custom credentials removed. Reverting to server default credentials or simulated Hinglish dialogues.`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
         function updateApiKeyBtnState() {
-            const hasKey = !!localStorage.getItem('abhyas_user_api_key');
-            if (hasKey) {
+            const hasGemini = !!localStorage.getItem('abhyas_user_api_key');
+            const hasOpenRouter = !!localStorage.getItem('abhyas_user_openrouter_key');
+            
+            if (hasGemini && hasOpenRouter) {
                 apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Key Active</span>`;
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Keys Active</span>`;
+            } else if (hasGemini) {
+                apiKeyBtn.classList.add('has-key');
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Gemini Active</span>`;
+            } else if (hasOpenRouter) {
+                apiKeyBtn.classList.add('has-key');
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Cloud Fallback</span>`;
             } else {
                 apiKeyBtn.classList.remove('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Set API Key</span>`;
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Set API Keys</span>`;
             }
         }
 

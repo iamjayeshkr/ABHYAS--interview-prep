@@ -371,7 +371,7 @@
             statusSpan.style.color = "var(--accent-secondary)";
 
             try {
-                const response = await fetch('http://localhost:5001/api/run', {
+                const response = await fetch('/api/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code, language })
@@ -400,7 +400,7 @@
                 
                 consoleDiv.innerHTML = html;
             } catch (err) {
-                consoleDiv.innerHTML = `<span style="color: var(--danger)">Error connecting to local compilation server. Make sure you started the backend via 'node server.js'!</span><br><br>${err.message}`;
+                consoleDiv.innerHTML = `<span style="color: var(--danger)">Error connecting to sandboxed compilation server. Make sure the server backend is running!</span><br><br>${err.message}`;
                 statusSpan.innerText = "SERVER ERROR";
                 statusSpan.style.color = "var(--danger)";
             }
@@ -420,9 +420,22 @@
             chatDiv.scrollTop = chatDiv.scrollHeight;
 
             try {
-                const response = await fetch('http://localhost:5001/api/mentor/hint', {
+                const userApiKey = localStorage.getItem('abhyas_user_api_key') || '';
+                const openRouterKey = localStorage.getItem('abhyas_user_openrouter_key') || '';
+                
+                const headers = { 
+                    'Content-Type': 'application/json'
+                };
+                if (userApiKey) {
+                    headers['x-api-key'] = userApiKey;
+                }
+                if (openRouterKey) {
+                    headers['x-openrouter-key'] = openRouterKey;
+                }
+
+                const response = await fetch('/api/mentor/hint', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ 
                         code, 
                         language, 

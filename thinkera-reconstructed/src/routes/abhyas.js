@@ -3,20 +3,19 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Asynchronous helper to query local Qwen 2.5:3b model via Ollama
-async function tryOllamaFallback(message, context, history, systemPrompt, ollamaEndpoint = 'http://localhost:11434') {
-    let formattedEndpoint = ollamaEndpoint.trim();
-    if (!formattedEndpoint.startsWith('http://') && !formattedEndpoint.startsWith('https://')) {
-        formattedEndpoint = 'https://' + formattedEndpoint;
+// Asynchronous helper to query cloud Qwen 2.5:3b or other models via OpenRouter
+async function tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey) {
+    if (!openRouterKey) {
+        throw new Error("No OpenRouter Key provided.");
     }
 
-    const ollamaMessages = [
+    const messages = [
         { role: 'system', content: systemPrompt }
     ];
 
     if (history && history.length > 0) {
         history.forEach(msg => {
-            ollamaMessages.push({
+            messages.push({
                 role: msg.role === 'user' ? 'user' : 'assistant',
                 content: msg.content
             });
@@ -27,28 +26,38 @@ async function tryOllamaFallback(message, context, history, systemPrompt, ollama
     if (context) {
         currentMessageText = `[REFERENCE CONTEXT DOCUMENT PROVIDED BY USER]:\n${context}\n\n[USER INSTRUCTION]:\n${message}`;
     }
-    ollamaMessages.push({
+    messages.push({
         role: 'user',
         content: currentMessageText
     });
 
-    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model at endpoint "${formattedEndpoint}"...`);
-    const ollamaRes = await fetch(`${formattedEndpoint}/api/chat`, {
+    console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud qwen-2.5-3b-instruct model...`);
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openRouterKey.trim()}`,
+            'HTTP-Referer': 'http://localhost:5001',
+            'X-Title': 'ABHYAS Prep Terminal'
+        },
         body: JSON.stringify({
-            model: 'qwen2.5:3b',
-            messages: ollamaMessages,
+            model: 'qwen/qwen-2.5-3b-instruct:free',
+            messages: messages,
             stream: false
         })
     });
 
-    if (!ollamaRes.ok) {
-        throw new Error(`Ollama HTTP Error: ${ollamaRes.status}`);
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenRouter API HTTP Error: ${response.status} - ${errorText}`);
     }
 
-    const ollamaData = await ollamaRes.json();
-    return ollamaData.message.content;
+    const data = await response.json();
+    if (!data.choices || data.choices.length === 0) {
+        throw new Error("OpenRouter returned empty choices or response format issue.");
+    }
+
+    return data.choices[0].message.content;
 }
 
 router.post('/chat', async (req, res) => {
@@ -111,7 +120,7 @@ CORE BEHAVIORAL DIRECTIVES:
     });
 
     const userApiKey = req.headers['x-api-key'];
-    const ollamaEndpoint = req.headers['x-ollama-endpoint'] || 'http://localhost:11434';
+    const openRouterKey = req.headers['x-openrouter-key'];
     let activeClient = aiClient;
 
     if (userApiKey) {
@@ -149,35 +158,37 @@ CORE BEHAVIORAL DIRECTIVES:
     } catch (err) {
         console.error("❌ Gemini API Error in ABHYAS Chat:", err.message);
 
-        // Attempt Tier 2 Fallback: Local Qwen 2.5:3b via Ollama
-        try {
-            const qwenReply = await tryOllamaFallback(message, context, history, systemPrompt, ollamaEndpoint);
-            console.log("✔ [ABHYAS CHAT]: Successfully retrieved local Qwen response!");
-            return res.json({
-                reply: `🤖 **[ABHYAS COACH - QWEN2.5 LOCAL AI ACTIVE]**\n\n${qwenReply}`
-            });
-        } catch (ollamaErr) {
-            console.warn("⚠️ [ABHYAS CHAT]: Local Qwen Ollama fallback failed:", ollamaErr.message);
-
-            // Tier 3 Fallback: Graceful simulated text dialogs
-            const isQuotaExceeded = err.message.toLowerCase().includes("quota") || err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED");
-            const isKeyInvalid = err.message.toLowerCase().includes("key not valid") || err.message.includes("400") || err.message.toLowerCase().includes("invalid_argument") || err.message.toLowerCase().includes("api_key_invalid");
-
-            if (isQuotaExceeded || isKeyInvalid) {
-                console.log("ℹ [ABHYAS CHAT]: API Key has quota limits or is invalid. Engaging intelligent simulated fallback.");
-
-                let explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki aapka Gemini API Key currently **Rate Limited (429 Quota Exceeded)** hai, ya is key par free-tier requests block hain (Limit: 0).";
-                if (isKeyInvalid) {
-                    explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki jo Gemini API Key enter kiya gaya hai, woh **Invalid** hai ya active nahi hai.";
-                }
-
+        // Attempt Tier 2 Fallback: Cloud Qwen 2.5:3b via OpenRouter
+        if (openRouterKey) {
+            try {
+                const qwenReply = await tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey);
+                console.log("✔ [ABHYAS CHAT]: Successfully retrieved cloud OpenRouter Qwen response!");
                 return res.json({
-                    reply: `🤖 **[ABHYAS COACH - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: ${explanation} (Hum yahan temporary simulated coaching mode mein run kar rahe hain taaki aapki preparation halt na ho!)*\n\n---\n\nBilkul! Main aapki help karti hoon. Aapne poocha: "${message}". \n\nClosures, indexing, or system queries ho — jab bhi hum Gemini API constraints encounter karte hain, ABHYAS intelligent simulations provide karti hai. \n\n### 💡 Key Concept Highlight:\n1. **Lexical Scopes & Closures**: In JS, functions nested inside outer functions always hold on to the variables of their parent context, forming a closure.\n2. **Star Method Behavioral Prep**: Use Situation, Task, Action, Result to anchor your behavioral answers.\n\nBatao Jayesh, aap is question ka mock answer try karna chahte ho? Write it down here, and main use evaluate karke aapko readiness rating doongi!`
+                    reply: `🤖 **[ABHYAS COACH - QWEN2.5 CLOUD FALLBACK ACTIVE]**\n\n${qwenReply}`
                 });
+            } catch (openRouterErr) {
+                console.warn("⚠️ [ABHYAS CHAT]: Cloud OpenRouter fallback failed:", openRouterErr.message);
+            }
+        }
+
+        // Tier 3 Fallback: Graceful simulated text dialogs
+        const isQuotaExceeded = err.message.toLowerCase().includes("quota") || err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED");
+        const isKeyInvalid = err.message.toLowerCase().includes("key not valid") || err.message.includes("400") || err.message.toLowerCase().includes("invalid_argument") || err.message.toLowerCase().includes("api_key_invalid");
+
+        if (isQuotaExceeded || isKeyInvalid) {
+            console.log("ℹ [ABHYAS CHAT]: API Key has quota limits or is invalid. Engaging intelligent simulated fallback.");
+
+            let explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki aapka Gemini API Key currently **Rate Limited (429 Quota Exceeded)** hai, ya is key par free-tier requests block hain (Limit: 0).";
+            if (isKeyInvalid) {
+                explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki jo Gemini API Key enter kiya gaya hai, woh **Invalid** hai ya active nahi hai.";
             }
 
-            res.status(500).json({ error: "Failed to connect to Gemini API.", details: err.message });
+            return res.json({
+                reply: `🤖 **[ABHYAS COACH - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: ${explanation} (Hum yahan temporary simulated coaching mode mein run kar rahe hain taaki aapki preparation halt na ho!)\n\n💡 Tip: Aap settings modal 🔑 mein **OpenRouter API Key** bhi configure kar sakte hain taaki quota limits par automatic cloud fallback active rahe!*\n\n---\n\nBilkul! Main aapki help karti hoon. Aapne poocha: "${message}". \n\nClosures, indexing, or system queries ho — jab bhi hum Gemini API constraints encounter karte hain, ABHYAS intelligent simulations provide karti hai.\n\n### 💡 Key Concept Highlight:\n1. **Lexical Scopes & Closures**: In JS, functions nested inside outer functions always hold on to the variables of their parent context, forming a closure.\n2. **Star Method Behavioral Prep**: Use Situation, Task, Action, Result to anchor your behavioral answers.\n\nBatao Jayesh, aap is question ka mock answer try karna chahte ho? Write it down here, and main use evaluate karke aapko readiness rating doongi!`
+            });
         }
+
+        res.status(500).json({ error: "Failed to connect to Gemini API.", details: err.message });
     }
 });
 

@@ -3,19 +3,23 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Asynchronous helper to query local Qwen 2.5:3b model for mentor hints via Ollama
-async function tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt, ollamaEndpoint = 'http://localhost:11434') {
-    let formattedEndpoint = ollamaEndpoint.trim();
-    if (!formattedEndpoint.startsWith('http://') && !formattedEndpoint.startsWith('https://')) {
-        formattedEndpoint = 'https://' + formattedEndpoint;
+// Asynchronous helper to query cloud Qwen 2.5:3b model for mentor hints via OpenRouter
+async function tryOpenRouterMentorFallback(code, language, errorContext, systemPrompt, userPrompt, openRouterKey) {
+    if (!openRouterKey) {
+        throw new Error("No OpenRouter Key provided.");
     }
 
-    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model for mentor hints at endpoint "${formattedEndpoint}"...`);
-    const ollamaRes = await fetch(`${formattedEndpoint}/api/chat`, {
+    console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud qwen-2.5-3b-instruct model for mentor hints...`);
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openRouterKey.trim()}`,
+            'HTTP-Referer': 'http://localhost:5001',
+            'X-Title': 'ThinkEra DSA Mentor'
+        },
         body: JSON.stringify({
-            model: 'qwen2.5:3b',
+            model: 'qwen/qwen-2.5-3b-instruct:free',
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -24,12 +28,17 @@ async function tryOllamaMentorFallback(code, language, errorContext, systemPromp
         })
     });
 
-    if (!ollamaRes.ok) {
-        throw new Error(`Ollama HTTP Error: ${ollamaRes.status}`);
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenRouter API HTTP Error: ${response.status} - ${errorText}`);
     }
 
-    const ollamaData = await ollamaRes.json();
-    return ollamaData.message.content;
+    const data = await response.json();
+    if (!data.choices || data.choices.length === 0) {
+        throw new Error("OpenRouter returned empty choices or response format issue.");
+    }
+
+    return data.choices[0].message.content;
 }
 
 router.post('/hint', async (req, res) => {
@@ -62,7 +71,7 @@ Explain my bug and give me a helpful hint without showing me the solution.
 `;
 
     const userApiKey = req.headers['x-api-key'];
-    const ollamaEndpoint = req.headers['x-ollama-endpoint'] || 'http://localhost:11434';
+    const openRouterKey = req.headers['x-openrouter-key'];
     let activeClient = aiClient;
 
     if (userApiKey) {
@@ -110,35 +119,37 @@ Explain my bug and give me a helpful hint without showing me the solution.
     } catch (err) {
         console.error("❌ Gemini API Error in Mentor Hint:", err.message);
 
-        // Attempt Tier 2 Fallback: Local Qwen 2.5:3b via Ollama
-        try {
-            const qwenHint = await tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt, ollamaEndpoint);
-            console.log("✔ [MENTOR HINT]: Successfully retrieved local Qwen response!");
-            return res.json({
-                hint: `🤖 **[MENTOR HINT - QWEN2.5 LOCAL AI ACTIVE]**\n\n${qwenHint}`
-            });
-        } catch (ollamaErr) {
-            console.warn("⚠️ [MENTOR HINT]: Local Qwen Ollama fallback failed:", ollamaErr.message);
-
-            // Tier 3 Fallback: Graceful simulated text hints
-            const isQuotaExceeded = err.message.toLowerCase().includes("quota") || err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED");
-            const isKeyInvalid = err.message.toLowerCase().includes("key not valid") || err.message.includes("400") || err.message.toLowerCase().includes("invalid_argument") || err.message.toLowerCase().includes("api_key_invalid");
-
-            if (isQuotaExceeded || isKeyInvalid) {
-                console.log("ℹ [MENTOR HINT]: API Key has quota limits or is invalid. Engaging simulated fallback.");
-
-                let explanation = "API Key is rate-limited (429) or has a zero-limit quota constraint on this model.";
-                if (isKeyInvalid) {
-                    explanation = "the API Key entered is invalid or active parameters failed to resolve.";
-                }
-
+        // Attempt Tier 2 Fallback: Cloud Qwen 2.5:3b via OpenRouter
+        if (openRouterKey) {
+            try {
+                const qwenHint = await tryOpenRouterMentorFallback(code, language, errorContext, systemPrompt, userPrompt, openRouterKey);
+                console.log("✔ [MENTOR HINT]: Successfully retrieved cloud OpenRouter Qwen response!");
                 return res.json({
-                    hint: `🤖 **[MENTOR HINT - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: It looks like ${explanation} (Providing intelligent simulation to keep your practice uninterrupted!)*\n\n---\n\nGreat start with your implementation! I've analyzed your logic:\n\n1. **Logic Check**: Make sure your loop indices correctly start from \`i + 1\` if you are checking pair-wise matches, avoiding duplicate element matches.\n2. **Optimization Guide**: Consider using a Hash Map/Object to store already visited numbers. This transforms your search from \`O(N^2)\` time complexity to \`O(N)\`!\n\nTry updating your loop logic or code structure and check again!`
+                    hint: `🤖 **[MENTOR HINT - QWEN2.5 CLOUD FALLBACK ACTIVE]**\n\n${qwenHint}`
                 });
+            } catch (openRouterErr) {
+                console.warn("⚠️ [MENTOR HINT]: Cloud OpenRouter fallback failed:", openRouterErr.message);
+            }
+        }
+
+        // Tier 3 Fallback: Graceful simulated text hints
+        const isQuotaExceeded = err.message.toLowerCase().includes("quota") || err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED");
+        const isKeyInvalid = err.message.toLowerCase().includes("key not valid") || err.message.includes("400") || err.message.toLowerCase().includes("invalid_argument") || err.message.toLowerCase().includes("api_key_invalid");
+
+        if (isQuotaExceeded || isKeyInvalid) {
+            console.log("ℹ [MENTOR HINT]: API Key has quota limits or is invalid. Engaging simulated fallback.");
+
+            let explanation = "API Key is rate-limited (429) or has a zero-limit quota constraint on this model.";
+            if (isKeyInvalid) {
+                explanation = "the API Key entered is invalid or active parameters failed to resolve.";
             }
 
-            res.status(500).json({ error: "Failed to connect to Gemini API.", details: err.message });
+            return res.json({
+                hint: `🤖 **[MENTOR HINT - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: It looks like ${explanation} (Providing intelligent simulation to keep your practice uninterrupted!)\n\n💡 Tip: Aap settings modal 🔑 mein **OpenRouter API Key** bhi configure kar sakte hain taaki quota exhaustion par automatic cloud fallback active rahe!*`
+            });
         }
+
+        res.status(500).json({ error: "Failed to connect to Gemini API.", details: err.message });
     }
 });
 
