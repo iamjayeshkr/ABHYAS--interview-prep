@@ -1,6 +1,6 @@
 # 🚀 ABHYAS: Enterprise-Grade Systems Architecture & Resiliency Engineering
 
-ABHYAS is a high-availability, low-latency, and zero-cost mock interview platform engineered specifically for software engineers. While many mock interview tools rely on slow, heavy frameworks and fragile local setups, ABHYAS is designed using modern systems-engineering paradigms to achieve sub-second client response times, infinite AI API resiliency, and military-grade local data privacy.
+ABHYAS is a high-availability, low-latency, and zero-cost universal exam and interview preparation platform engineered for software engineers, students, and professionals. While many study tools rely on slow, heavy frameworks and fragile local setups, ABHYAS is designed using modern systems-engineering paradigms to achieve sub-second client response times, infinite AI API resiliency, and military-grade local data privacy.
 
 This architectural blueprint outlines the production-grade decisions, distributed systems patterns, and performance optimizations engineered into the platform.
 
@@ -24,7 +24,7 @@ To qualify for premium tech interview assessments, the platform was built agains
 *   **99.99% Availability (High Resiliency)**: Complete immunity to third-party API outages (e.g., Google Gemini quotas or OpenRouter free-tier congestion).
 *   **Sub-150ms Client-Side Responsiveness**: Eliminating rendering blocks during intensive client operations (such as multi-page PDF parsing or syntax parsing).
 *   **Sub-2.0s End-to-End P95 Latency**: Enforcing low network latency, strict REST abort timers, and optimized model auto-routing.
-*   **Zero-Knowledge Privacy Architecture**: Complete local processing of highly sensitive applicant data (Resume details, project architectures, and contact information) before API transmission.
+*   **Zero-Knowledge Privacy Architecture**: Complete local processing of highly sensitive user data (Resume details, project architectures, certification notes, textbook chapters, and syllabus outlines) before API transmission.
 
 ---
 
@@ -101,7 +101,7 @@ stateDiagram-v2
 ## 4. Advanced Client-Side Performance & Web Worker Isolation
 
 ### Off-Thread Document Processing (Non-Blocking UI)
-Reading multi-page resumes or job descriptions in the browser involves intensive CPU tasks, such as decoding compressed streams, parsing fonts, and extracting text blocks.
+Reading multi-page resumes, textbooks, certification guides, syllabus notes, or question papers in the browser involves intensive CPU tasks, such as decoding compressed streams, parsing fonts, and extracting text blocks.
 *   **The Bottleneck**: Running these operations on the main browser thread blocks the event loop, causing visual stutter, unresponsive input fields, and dropping the frame rate from 60fps to 0fps.
 *   **The System Solution**: ABHYAS offloads the heavy PDF.js extraction tasks to an isolated client-side **Web Worker**. The parser runs in a separate system thread, passing the clean text back to the main UI thread via asynchronous message passing (`postMessage`). This keeps the terminal prompt completely responsive.
 
@@ -166,10 +166,10 @@ Operating a distributed system requires deep visibility into API latency and per
 
 ## 7. Enterprise Scaling Roadmap (Vector RAG & Async Evaluation)
 
-To scale ABHYAS for millions of concurrent mock interviews, the engineering blueprint defines a clear path forward:
+To scale ABHYAS for millions of concurrent mock prep sessions, exams, and interviews, the engineering blueprint defines a clear path forward:
 
 ### Semantic Search & Retrieval-Augmented Generation (RAG)
-To match resumes and job descriptions against vast banks of thousands of technical questions, we plan to implement a local vector database pipeline:
+To match textbooks, syllabus files, resumes, and job descriptions against vast banks of thousands of technical questions, we plan to implement a local vector database pipeline:
 
 ```mermaid
 graph LR
