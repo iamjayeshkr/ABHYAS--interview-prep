@@ -1035,6 +1035,30 @@ Type a command or ask a question to start. For example:
 
                 terminalInput.value = "";
 
+                // Intercept clear command
+                if (query.toLowerCase() === 'clear') {
+                    terminalScreen.innerHTML = `
+                        <div class="abhyas-greeting">
+========================================================================
+             🎯  ABHYAS INTERVIEW PREP CORE TERMINAL  🎯               
+========================================================================
+Welcome, Jayesh! I am ABHYAS, your dedicated AI Interview Coach. 
+
+I've been optimized to help you prepare directly without any complex 
+dashboards. Drop your Resume PDF or study notes in the upload box to 
+the left, and start asking me anything!
+
+Type a command or ask a question to start. For example:
+  - "Ask me a project deep-dive question based on my resume"
+  - "Give me a mock interview behavioral question"
+  - "Explain closures and give a clean mock explanation"
+========================================================================
+                        </div>
+                    `;
+                    chatHistory = [];
+                    return;
+                }
+
                 // Display user line
                 const userDiv = document.createElement('div');
                 userDiv.className = 'user-line';

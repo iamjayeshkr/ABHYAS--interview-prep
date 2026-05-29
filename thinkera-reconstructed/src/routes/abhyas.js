@@ -127,13 +127,18 @@ CORE BEHAVIORAL DIRECTIVES:
      * 🔧 **Kahan improvement chahiye** (Gaps, filler words, or missing detail)
      * STAR-method adherence and structure checks.
 
-3. INTERACTIVE MD CONCEPT TEACHING:
-   - When teaching technical concepts (e.g. Closures, Indexing, Processes vs Threads, System Design components), structure your answer as an interactive Markdown study guide.
+3. TALK SMALL & CONCISE BY DEFAULT (EXPAND ON REQUEST):
+   - By default, you MUST keep your responses extremely short, concise, and snappy (typically 2-3 sentences max). Speak in a highly conversational and focused tone.
+   - Proactively suggest at the end of your response that Jayesh can ask to "expand" or "deep-dive" if he wants a detailed explanation, custom diagrams, or code blocks (e.g., "*[Hint: Agar details or code chahiye, toh ask me to 'expand' or 'deep-dive'!]*").
+   - ONLY write detailed explanations, code blocks, checklists, or custom ASCII diagrams if the user explicitly asks to "expand", "deep-dive", "elaborate", "tell me more", "explain in detail", or similar keywords in their prompt.
+
+4. INTERACTIVE MD CONCEPT TEACHING (ONLY ON EXPANSION REQUEST):
+   - When the user explicitly requests an expansion, deep-dive, or detailed explanation, structure your detailed answer as an interactive Markdown study guide.
    - Use clear headers, checklists, bullet points, and code blocks.
    - Draw custom ASCII diagrams or visual text flows to explain architectural data lines.
-   - End EVERY explanation with a quick, engaging interactive challenge, follow-up quiz, or reflective question to prompt Jayesh (e.g., "Chalo ab ek simple challenge: Agar main continuous write operations karoon, toh custom index performance par kya impact padega? Aap try karo!").
+   - End EVERY expanded explanation with a quick, engaging interactive challenge, follow-up quiz, or reflective question to prompt Jayesh (e.g., "Chalo ab ek simple challenge: Agar main continuous write operations karoon, toh custom index performance par kya impact padega? Aap try karo!").
 
-4. CONTEXT ANCHORING:
+5. CONTEXT ANCHORING:
    - If a reference document (Resume/JD/notes) is uploaded, anchor your questions, mock scenarios, and critiques specifically to the projects (ThinkEra, TechEra, Kriya) and tech stacks mentioned.
 `;
 
@@ -177,8 +182,23 @@ CORE BEHAVIORAL DIRECTIVES:
 
     if (!activeClient) {
         console.log("🤖 Running simulated chat fallback...");
+        const isQueryingClosure = message.toLowerCase().includes("closure");
+        const wantsExpand = message.toLowerCase().match(/\b(expand|deep-dive|deepdive|elaborate|detail|more)\b/);
+
+        let simulatedReply = `🤖 **[SIMULATED ABHYAS - KEY REQUIRED]**\n\nI received your prompt: "${message}". To enable live model responses, please click the "🔑 Set API Key" button at the top right of the terminal and add your own Gemini/OpenRouter API Key!\n\n*[Hint: Try asking about 'Closures' or type 'expand' to see simulated responses!]*`;
+
+        if (isQueryingClosure) {
+            if (wantsExpand) {
+                simulatedReply = `🤖 **[SIMULATED ABHYAS - EXPANDED GUIDE]**\n\n### 📚 Complete Guide: Closures in JavaScript\n\nIn JavaScript, **closures** occur when a nested function retains access to the variables of its parent scope even after that parent function has finished executing.\n\n#### 💻 Example Code:\n\`\`\`javascript\nfunction outerFunction(outerVariable) {\n    return function innerFunction(innerVariable) {\n        console.log('Outer Variable: ' + outerVariable);\n        console.log('Inner Variable: ' + innerVariable);\n    }\n}\nconst newFunction = outerFunction('outside');\nnewFunction('inside'); // Outputs both!\n\`\`\`\n\n#### 🎯 Interactive Challenge:\nCan you write a function that acts as a private counter using closures? Try typing it in the terminal!`;
+            } else {
+                simulatedReply = `🤖 **[SIMULATED ABHYAS - TALK SMALL]**\n\nClosures JavaScript ka ek special feature hain jahan ek nested function apne outer (parent) lexical scope variables ko dynamic context access provide karta hai.\n\n*(To get a complete guide, ASCII diagrams, and code snippets, ask me to **"expand"** or **"deep-dive"**!)*`;
+            }
+        } else if (wantsExpand) {
+            simulatedReply = `🤖 **[SIMULATED ABHYAS - EXPANDED VIEW]**\n\nHere is the detailed deep-dive expansion for your request: "${message}".\n\n1. **Detailed Explanation**: We provide architectural deep-dives here.\n2. **Best Practices**: Ensure clean, modular coding standards.\n\nTo enable live custom models, configure your key using the settings button in the top right!`;
+        }
+
         return res.json({
-            reply: `🤖 [SIMULATED ABHYAS]\n\nI received your prompt: "${message}".\n\nTo enable live responses, please click the "🔑 Set API Key" button at the top right of the terminal and add your own Gemini API Key!`
+            reply: simulatedReply
         });
     }
 
