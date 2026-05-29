@@ -5,8 +5,13 @@ const { aiClient } = require('../config/ai');
 
 // Asynchronous helper to query local Qwen 2.5:3b model for mentor hints via Ollama
 async function tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt, ollamaEndpoint = 'http://localhost:11434') {
-    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model for mentor hints at endpoint "${ollamaEndpoint}"...`);
-    const ollamaRes = await fetch(`${ollamaEndpoint}/api/chat`, {
+    let formattedEndpoint = ollamaEndpoint.trim();
+    if (!formattedEndpoint.startsWith('http://') && !formattedEndpoint.startsWith('https://')) {
+        formattedEndpoint = 'https://' + formattedEndpoint;
+    }
+
+    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model for mentor hints at endpoint "${formattedEndpoint}"...`);
+    const ollamaRes = await fetch(`${formattedEndpoint}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
