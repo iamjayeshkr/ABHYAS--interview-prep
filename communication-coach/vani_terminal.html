@@ -134,6 +134,32 @@
             transform: translateY(-1px);
         }
 
+        .btn-guide-tab {
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .btn-guide-tab:hover {
+            background: rgba(61, 59, 56, 0.05);
+            border-color: rgba(61, 59, 56, 0.1);
+        }
+        
+        .btn-guide-tab.active-tab {
+            color: #b45309;
+            background: rgba(202, 138, 4, 0.08);
+            border-color: rgba(202, 138, 4, 0.25);
+        }
+
         .status-pill {
             display: flex;
             align-items: center;
@@ -482,6 +508,180 @@
             caret-color: var(--accent-primary);
         }
 
+        /* API Integration Guide Progress Steps Tracker */
+        .guide-steps-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 0 0 16px 0;
+            padding: 0 8px;
+        }
+        .guide-steps-progress::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            right: 8px;
+            height: 2px;
+            background: rgba(61, 59, 56, 0.1);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        .guide-step-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            border: 2px solid rgba(61, 59, 56, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            z-index: 2;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .guide-step-dot.active {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 0 8px rgba(124, 98, 238, 0.4);
+        }
+        .guide-step-dot.completed {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+        
+        /* Guide Split Layout */
+        .guide-split-container {
+            display: flex;
+            gap: 20px;
+            min-height: 400px;
+            transition: all 0.3s ease;
+        }
+        
+        .guide-left-pane {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        
+        .guide-right-pane {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(26, 25, 29, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(61, 59, 56, 0.08);
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Mock browser container for screenshots */
+        .mockup-frame {
+            width: 100%;
+            background: #1a191d;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mockup-header {
+            background: #111013;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .mockup-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .mockup-image {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mockup-image:hover {
+            transform: scale(1.03);
+        }
+
+        /* Interactive Tester Sandbox Widget */
+        .api-tester-sandbox {
+            background: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(138, 118, 233, 0.2);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+        
+        .sandbox-input-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .sandbox-input {
+            flex: 1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(61, 59, 56, 0.15);
+            font-size: 11px;
+            outline: none;
+            background: white;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-main);
+        }
+        
+        .btn-sandbox-test {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-sandbox-test:hover {
+            opacity: 0.9;
+            transform: translateY(-0.5px);
+        }
+        
+        .sandbox-status {
+            font-size: 10.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 16px;
+            font-weight: 500;
+        }
+
         /* Responsive Media Queries */
         @media (max-width: 768px) {
             .workspace {
@@ -527,6 +727,74 @@
             }
         }
 
+        @media (max-width: 600px) {
+            /* Compact Header Actions - Icon Circles */
+            .header-actions .btn-key-toggle .btn-text,
+            .header-actions .btn-context-toggle .btn-text,
+            .header-actions .btn-dev-toggle .btn-text {
+                display: none !important;
+            }
+            .header-actions .btn-key-toggle,
+            .header-actions .btn-context-toggle,
+            .header-actions .btn-dev-toggle {
+                padding: 0 !important;
+                border-radius: 50% !important;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 15px !important;
+                flex-shrink: 0;
+            }
+            
+            /* Compact Input Prompt Symbol */
+            .input-prompt {
+                font-size: 0 !important;
+            }
+            .input-prompt::before {
+                content: '% ' !important;
+                font-size: 14px !important;
+                font-weight: 700 !important;
+                color: var(--accent-primary) !important;
+            }
+
+            /* Stacking Interactive API Guide */
+            .guide-split-container {
+                flex-direction: column !important;
+                min-height: auto !important;
+                gap: 16px !important;
+            }
+            .guide-left-pane {
+                width: 100% !important;
+            }
+            .guide-right-pane {
+                width: 100% !important;
+                padding: 8px !important;
+            }
+            .mockup-image {
+                height: 150px !important;
+            }
+            
+            /* Convert Guide Sidebar Tabs to a Horizontal Row on Mobile */
+            #guideModal div[style*="width: 180px"] {
+                width: 100% !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(61, 59, 56, 0.1) !important;
+                padding-right: 0 !important;
+                padding-bottom: 8px !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            .btn-guide-tab {
+                width: auto !important;
+                white-space: nowrap !important;
+                padding: 6px 12px !important;
+                font-size: 11.5px !important;
+            }
+        }
+
         @media (max-width: 480px) {
             .logo span {
                 display: none;
@@ -534,16 +802,6 @@
 
             .status-pill .status-text {
                 display: none;
-            }
-
-            .btn-key-toggle .btn-text,
-            .btn-context-toggle .btn-text {
-                display: none;
-            }
-
-            .btn-key-toggle,
-            .btn-context-toggle {
-                padding: 6px 10px;
             }
 
             .status-pill {
@@ -1173,6 +1431,9 @@
             <button id="contextToggleBtn" class="btn-context-toggle" onclick="toggleContext()">
                 📂 <span class="btn-text">Context Deck</span>
             </button>
+            <button id="guideBtn" class="btn-dev-toggle" style="color: #b45309; background: rgba(180, 83, 9, 0.08); border-color: rgba(180, 83, 9, 0.25);" onclick="openGuideModal()">
+                📖 <span class="btn-text">API Guide</span>
+            </button>
             <button id="devProfileBtn" class="btn-dev-toggle" onclick="openDevModal()">
                 👨‍💻 <span class="btn-text">About Me</span>
             </button>
@@ -1299,6 +1560,195 @@ Example prompts:
                 <div id="startupOtherLangGroup" style="display: none; width: 100%; margin-top: 6px; flex-direction: column; gap: 6px;">
                     <input type="text" id="startupOtherLangInput" class="key-input" placeholder="Enter language (e.g. Tamil, Spanish, French)" style="font-size: 12.5px; border-radius: 8px; padding: 8px 12px;" autocomplete="off">
                     <button class="btn-glass-action btn-glass-yes" style="padding: 8px; font-size: 12.5px;" onclick="submitStartupCustomLanguage()">Confirm Language</button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="guideModal" class="api-key-dialog glass-modal" style="padding: 0; max-width: 780px; width: 95%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.25);">
+        <div class="glass-modal-content" style="padding: 24px; display: flex; flex-direction: column; gap: 14px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+            <!-- Header -->
+            <div class="glass-modal-header" style="border-bottom: 1px solid rgba(61, 59, 56, 0.1); padding-bottom: 10px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">📖</span>
+                    <h3 class="glass-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--text-main);">Interactive API Integration Guide</h3>
+                </div>
+                <button class="dialog-close" onclick="closeGuideModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-main); line-height: 1;">×</button>
+            </div>
+
+            <!-- Top Visual Step Progress Bar -->
+            <div class="guide-steps-progress">
+                <div class="guide-step-dot active" id="dotGroq">1</div>
+                <div class="guide-step-dot" id="dotGemini">2</div>
+                <div class="guide-step-dot" id="dotEleven">3</div>
+                <div class="guide-step-dot" id="dotSave">4</div>
+            </div>
+
+            <!-- Split Layout -->
+            <div style="display: flex; gap: 20px; min-height: 380px;">
+                <!-- Left Sidebar: Interactive Tabs -->
+                <div style="width: 180px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid rgba(61, 59, 56, 0.1); padding-right: 16px; flex-shrink: 0;">
+                    <button class="btn-guide-tab active-tab" id="tabGroq" onclick="showGuideTab('groq')">
+                        ⚡ Groq Key
+                    </button>
+                    <button class="btn-guide-tab" id="tabGemini" onclick="showGuideTab('gemini')">
+                        ✨ Gemini Key
+                    </button>
+                    <button class="btn-guide-tab" id="tabEleven" onclick="showGuideTab('eleven')">
+                        🗣️ ElevenLabs
+                    </button>
+                    <button class="btn-guide-tab" id="tabSave" onclick="showGuideTab('save')">
+                        🔑 Activation
+                    </button>
+                </div>
+
+                <!-- Right Content Area (Interactive Split Container) -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; padding-right: 4px;">
+                    <div class="guide-split-container">
+                        <!-- Left Sub-Pane: Steps & Local Sandbox Tester -->
+                        <div class="guide-left-pane">
+                            <!-- GROQ SLIDE -->
+                            <div class="guide-slide-content fade-in" id="slideGroq">
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #b45309; font-weight: 700;">⚡ Get Your Groq Key (100% Free)</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.45; color: var(--text-main);">
+                                    Groq delivers hyper-speed streaming LLM results (< 500ms) with a massive **14,400 free requests per day**! 
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.4; color: var(--text-main);">
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #b45309; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">1</div>
+                                        <div>Open the <a href="https://console.groq.com/keys" target="_blank" style="color: #b45309; font-weight: 700; text-decoration: underline;">Groq Keys Portal</a> and sign in.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #b45309; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">2</div>
+                                        <div>Click the orange <strong>"Create API Key"</strong> button.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #b45309; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">3</div>
+                                        <div>Name your key (e.g. <em>"ABHYAS"</em>) and copy the key (starts with <code>gsk_</code>).</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sandbox Key Tester -->
+                                <div class="api-tester-sandbox">
+                                    <div class="sandbox-status" id="statusGroqSandbox" style="color: #b45309;">⚙️ Local Signature Sandbox Validator:</div>
+                                    <div class="sandbox-input-row">
+                                        <input type="password" class="sandbox-input" id="inputGroqSandbox" placeholder="Paste gsk_... key to test signature" autocomplete="off">
+                                        <button class="btn-sandbox-test" style="background:#b45309;" onclick="verifySandboxKey('groq')">Verify</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GEMINI SLIDE -->
+                            <div class="guide-slide-content" id="slideGemini" style="display: none;">
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #1e40af; font-weight: 700;">✨ Get Google Gemini Key (Free)</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.45; color: var(--text-main);">
+                                    Google Gemini is our recommended engine for logical analysis, coding, and resume-anchored interview preparation.
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.4; color: var(--text-main);">
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #1e40af; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">1</div>
+                                        <div>Open the <a href="https://aistudio.google.com/" target="_blank" style="color: #1e40af; font-weight: 700; text-decoration: underline;">Google AI Studio Console</a>.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #1e40af; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">2</div>
+                                        <div>Click the blue <strong>"Get API Key"</strong> in the sidebar.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #1e40af; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">3</div>
+                                        <div>Click **Create API Key**, create a Cloud Project, and copy the key.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Sandbox Key Tester -->
+                                <div class="api-tester-sandbox">
+                                    <div class="sandbox-status" id="statusGeminiSandbox" style="color: #1e40af;">⚙️ Local Signature Sandbox Validator:</div>
+                                    <div class="sandbox-input-row">
+                                        <input type="password" class="sandbox-input" id="inputGeminiSandbox" placeholder="Paste AIzaSy... key to test" autocomplete="off">
+                                        <button class="btn-sandbox-test" style="background:#1e40af;" onclick="verifySandboxKey('gemini')">Verify</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ELEVENLABS SLIDE -->
+                            <div class="guide-slide-content" id="slideEleven" style="display: none;">
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #047857; font-weight: 700;">🗣️ Get ElevenLabs Key (Cloud Voice)</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.45; color: var(--text-main);">
+                                    Unlock ultra-realistic, human-level vocal syntheses. ABHYAS will speak hinglish fluently with premium, breathing inflections!
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.4; color: var(--text-main);">
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #047857; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">1</div>
+                                        <div>Open the <a href="https://elevenlabs.io/" target="_blank" style="color: #047857; font-weight: 700; text-decoration: underline;">ElevenLabs Dashboard</a>.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #047857; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">2</div>
+                                        <div>Click your **Profile Icon** in the bottom-left sidebar.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #047857; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">3</div>
+                                        <div>Open **API Keys**, click the eye icon to copy your active key.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Sandbox Key Tester -->
+                                <div class="api-tester-sandbox">
+                                    <div class="sandbox-status" id="statusElevenSandbox" style="color: #047857;">⚙️ Local Signature Sandbox Validator:</div>
+                                    <div class="sandbox-input-row">
+                                        <input type="password" class="sandbox-input" id="inputElevenSandbox" placeholder="Paste 32-char key to test signature" autocomplete="off">
+                                        <button class="btn-sandbox-test" style="background:#047857;" onclick="verifySandboxKey('eleven')">Verify</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SAVE SLIDE -->
+                            <div class="guide-slide-content" id="slideSave" style="display: none;">
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #7c2d12; font-weight: 700;">🔑 Saving and Activating Credentials</h4>
+                                <p style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.45; color: var(--text-main);">
+                                    Once your keys are ready, sync them instantly with the terminal's native credential compiler.
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.4; color: var(--text-main);">
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #7c2d12; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">1</div>
+                                        <div>Click the **🔑 Set API Key** button in the header actions bar.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #7c2d12; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">2</div>
+                                        <div>Paste your validated keys in their respective input fields.</div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <div style="background: #7c2d12; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;">3</div>
+                                        <div>Click the glowing **Save** button. The terminal will log confirmation!</div>
+                                    </div>
+                                </div>
+                                <div style="background: rgba(124, 45, 18, 0.05); border: 1px dashed rgba(124, 45, 18, 0.2); border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11px; color: #7c2d12; display: flex; gap: 6px; line-height: 1.35;">
+                                    <span>🛡️</span>
+                                    <span>All keys are locked securely in local storage. They are never uploaded or synced to external servers!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Sub-Pane: Browser Mockup Visual Image -->
+                        <div class="guide-right-pane">
+                            <div class="mockup-frame">
+                                <div class="mockup-header">
+                                    <div class="mockup-dot" style="background:#ff5f56;"></div>
+                                    <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                    <div class="mockup-dot" style="background:#27c93f;"></div>
+                                </div>
+                                <img id="guideMockupImg" class="mockup-image" src="/assets/sprites/guide_groq.png" alt="API Console Mockup Screenshot">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div style="border-top: 1px solid rgba(61, 59, 56, 0.1); padding-top: 10px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <button class="btn-glass-action btn-glass-no" id="btnPrevSlide" style="padding: 6px 14px; font-size: 12px;" onclick="prevGuideSlide()" disabled>
+                            ← Previous Step
+                        </button>
+                        <button class="btn-glass-action btn-glass-yes" id="btnNextSlide" style="padding: 6px 14px; font-size: 12px; background: var(--accent-primary); border-color: var(--accent-primary); width: auto;" onclick="nextGuideSlide()">
+                            Next Step →
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2601,6 +3051,140 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
         const ttsCustomLanguageInput = document.getElementById('ttsCustomLanguageInput');
         const ttsCustomLanguageInputGroup = document.getElementById('ttsCustomLanguageInputGroup');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
+        const guideModal = document.getElementById('guideModal');
+        const guideSlides = ['groq', 'gemini', 'eleven', 'save'];
+        let activeGuideIndex = 0;
+
+        function openGuideModal() {
+            if (guideModal) {
+                showGuideTab('groq');
+                guideModal.showModal();
+            }
+        }
+        function closeGuideModal() {
+            if (guideModal) guideModal.close();
+        }
+        function showGuideTab(tabId) {
+            // Find active index
+            const idx = guideSlides.indexOf(tabId);
+            if (idx === -1) return;
+            activeGuideIndex = idx;
+
+            // Highlight active tab button
+            const tabs = ['tabGroq', 'tabGemini', 'tabEleven', 'tabSave'];
+            tabs.forEach(t => {
+                const el = document.getElementById(t);
+                if (el) el.classList.remove('active-tab');
+            });
+            const activeTabBtn = document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            if (activeTabBtn) activeTabBtn.classList.add('active-tab');
+
+            // Toggle active slide content
+            guideSlides.forEach(s => {
+                const el = document.getElementById('slide' + s.charAt(0).toUpperCase() + s.slice(1));
+                if (el) el.style.display = 'none';
+            });
+            const activeSlide = document.getElementById('slide' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+            if (activeSlide) {
+                activeSlide.style.display = 'block';
+            }
+
+            // Update top progress indicator dots
+            const dots = ['dotGroq', 'dotGemini', 'dotEleven', 'dotSave'];
+            dots.forEach((d, dIdx) => {
+                const el = document.getElementById(d);
+                if (el) {
+                    el.classList.remove('active', 'completed');
+                    if (dIdx < activeGuideIndex) {
+                        el.classList.add('completed');
+                    } else if (dIdx === activeGuideIndex) {
+                        el.classList.add('active');
+                    }
+                }
+            });
+
+            // Update dynamic mockup dashboard screenshot
+            const guideMockupImg = document.getElementById('guideMockupImg');
+            if (guideMockupImg) {
+                guideMockupImg.src = `/assets/sprites/guide_${tabId}.png`;
+                guideMockupImg.alt = `${tabId.toUpperCase()} Guide Dashboard Screenshot`;
+            }
+
+            // Enable/disable navigation buttons
+            const btnPrev = document.getElementById('btnPrevSlide');
+            const btnNext = document.getElementById('btnNextSlide');
+            if (btnPrev) btnPrev.disabled = (activeGuideIndex === 0);
+            if (btnNext) {
+                if (activeGuideIndex === guideSlides.length - 1) {
+                    btnNext.textContent = 'Awesome! Got It';
+                    btnNext.onclick = closeGuideModal;
+                } else {
+                    btnNext.textContent = 'Next Step →';
+                    btnNext.onclick = nextGuideSlide;
+                }
+            }
+        }
+        function nextGuideSlide() {
+            if (activeGuideIndex < guideSlides.length - 1) {
+                showGuideTab(guideSlides[activeGuideIndex + 1]);
+            }
+        }
+        function prevGuideSlide() {
+            if (activeGuideIndex > 0) {
+                showGuideTab(guideSlides[activeGuideIndex - 1]);
+            }
+        }
+
+        // Live API Key Validator Sandbox Widget Logic
+        function verifySandboxKey(provider) {
+            const statusEl = document.getElementById('status' + provider.charAt(0).toUpperCase() + provider.slice(1) + 'Sandbox');
+            const inputEl = document.getElementById('input' + provider.charAt(0).toUpperCase() + provider.slice(1) + 'Sandbox');
+            if (!statusEl || !inputEl) return;
+
+            const key = inputEl.value.trim();
+            if (!key) {
+                statusEl.innerHTML = '❌ Please enter a key string first!';
+                statusEl.style.color = '#ef4444';
+                return;
+            }
+
+            statusEl.innerHTML = '🔍 Checking cryptographic signature...';
+            statusEl.style.color = '#d97706';
+
+            setTimeout(() => {
+                let isValid = false;
+                let errorMsg = '';
+
+                if (provider === 'groq') {
+                    if (key.startsWith('gsk_') && key.length >= 40) {
+                        isValid = true;
+                    } else {
+                        errorMsg = 'Groq keys must start with "gsk_" and be at least 40 characters.';
+                    }
+                } else if (provider === 'gemini') {
+                    if (key.startsWith('AIzaSy') && key.length >= 35) {
+                        isValid = true;
+                    } else {
+                        errorMsg = 'Gemini keys must start with "AIzaSy" and be at least 35 characters.';
+                    }
+                } else if (provider === 'eleven') {
+                    if (key.length >= 30) {
+                        isValid = true;
+                    } else {
+                        errorMsg = 'ElevenLabs keys are usually 32-character hexadecimal strings.';
+                    }
+                }
+
+                if (isValid) {
+                    statusEl.innerHTML = '✔️ Valid ' + provider.toUpperCase() + ' Key Format Detected!';
+                    statusEl.style.color = '#10b981';
+                } else {
+                    statusEl.innerHTML = '❌ Format Error: ' + errorMsg;
+                    statusEl.style.color = '#ef4444';
+                }
+            }, 800);
+        }
+
         const devModal = document.getElementById('devModal');
         function openDevModal() {
             if (devModal) devModal.showModal();

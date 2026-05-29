@@ -28,4 +28,20 @@ router.get('/assets/sprites/mypic.png', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../Sprites/Mypic/mypic.jpeg'));
 });
 
+router.get('/assets/sprites/guide_groq.png', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../Sprites/guide_groq.png'));
+});
+
+router.get('/assets/sprites/guide_gemini.png', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../Sprites/guide_gemini.png'));
+});
+
+router.get('/assets/sprites/guide_eleven.png', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../Sprites/guide_eleven.png'));
+});
+
+router.get('/assets/sprites/guide_save.png', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../Sprites/guide_save.png'));
+});
+
 module.exports = router;
