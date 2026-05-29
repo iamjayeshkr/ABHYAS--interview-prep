@@ -113,6 +113,27 @@
             border-color: rgba(128, 122, 115, 0.2);
         }
 
+        .btn-dev-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2a7896;
+            background: rgba(42, 120, 150, 0.08);
+            border: 1px solid rgba(42, 120, 150, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-dev-toggle:hover {
+            background: rgba(42, 120, 150, 0.15);
+            border-color: #2a7896;
+            transform: translateY(-1px);
+        }
+
         .status-pill {
             display: flex;
             align-items: center;
@@ -1152,6 +1173,9 @@
             <button id="contextToggleBtn" class="btn-context-toggle" onclick="toggleContext()">
                 📂 <span class="btn-text">Context Deck</span>
             </button>
+            <button id="devProfileBtn" class="btn-dev-toggle" onclick="openDevModal()">
+                👨‍💻 <span class="btn-text">About Me</span>
+            </button>
             <div class="status-pill">● <span class="status-text">Offline Assistant Synchronized</span></div>
         </div>
     </header>
@@ -1190,10 +1214,11 @@
 
             <div class="terminal-screen" id="terminalScreen">
                 <div class="abhyas-greeting">
-========================================================================
+=======================================================================
              🎯  ABHYAS INTERVIEW PREP CORE TERMINAL  🎯               
-========================================================================
-Welcome! I am ABHYAS, your AI Coach and Universal Mentor. 
+=======================================================================
+Welcome! I am ABHYAS, your AI Coach and Universal Mentor.
+👨‍💻 ARCHITECT: <a href="javascript:void(0)" onclick="openDevModal()" style="color:#2a7896; font-weight:800; text-decoration:underline; cursor:pointer;">Jayesh Kumar</a> (Lead Systems Engineer)
 
 ✨ NEW: MENTOR ADAPT ENGINE is ACTIVE
    I auto-detect your level from every message and reply accordingly:
@@ -1275,6 +1300,48 @@ Example prompts:
                     <input type="text" id="startupOtherLangInput" class="key-input" placeholder="Enter language (e.g. Tamil, Spanish, French)" style="font-size: 12.5px; border-radius: 8px; padding: 8px 12px;" autocomplete="off">
                     <button class="btn-glass-action btn-glass-yes" style="padding: 8px; font-size: 12.5px;" onclick="submitStartupCustomLanguage()">Confirm Language</button>
                 </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 👨‍💻 Developer Profile Modal (High-End Retro ASCII Glassmorphism) -->
+    <dialog id="devModal" class="api-key-dialog glass-modal" style="padding: 0; max-width: 480px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.25);">
+        <div class="glass-modal-content" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+            <div class="glass-modal-header" style="border-bottom: 1px solid rgba(61, 59, 56, 0.1); padding-bottom: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">👨‍💻</span>
+                    <h3 class="glass-modal-title" style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main);">About the Developer</h3>
+                </div>
+                <button class="dialog-close" onclick="closeDevModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-main); line-height: 1;">×</button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
+                <!-- ASCII Developer Portrait with Retro Scanline Border -->
+                <div style="position: relative; width: 160px; height: 240px; border-radius: 12px; overflow: hidden; border: 2px solid #2a7896; box-shadow: 0 0 15px rgba(42, 120, 150, 0.3);">
+                    <img src="/assets/sprites/mypic.png" alt="Jayesh Kumar - Developer" style="width: 100%; height: 100%; object-fit: cover; filter: sepia(0.2) contrast(1.1);">
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 6px 100%; pointer-events: none;"></div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0; font-size: 20px; font-weight: 800; color: #1f6480; letter-spacing: -0.5px;">Jayesh Kumar</h4>
+                    <p style="margin: 2px 0 0 0; font-size: 12.5px; font-weight: 600; color: #2a7896; text-transform: uppercase; letter-spacing: 1px;">Lead Architect & AI Systems Engineer</p>
+                </div>
+                
+                <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-main); font-weight: 500;">
+                    Hello! I'm Jayesh, the creator of **ABHYAS**. I design and build highly intelligent, immersive, and premium learning interfaces. ABHYAS was crafted to push the boundaries of AI mentorship by combining advanced adaptive system prompts, hyper-realistic cloud text-to-speech engine models, and retro-modern terminal visual experiences.
+                </p>
+                
+                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 4px; width: 100%;">
+                    <span style="font-size: 11px; font-weight: 700; background: rgba(42, 120, 150, 0.08); color: #2a7896; border: 1px solid rgba(42, 120, 150, 0.2); padding: 4px 10px; border-radius: 6px;">⚡ AI Engineering</span>
+                    <span style="font-size: 11px; font-weight: 700; background: rgba(42, 120, 150, 0.08); color: #2a7896; border: 1px solid rgba(42, 120, 150, 0.2); padding: 4px 10px; border-radius: 6px;">🎨 Premium UI/UX</span>
+                    <span style="font-size: 11px; font-weight: 700; background: rgba(42, 120, 150, 0.08); color: #2a7896; border: 1px solid rgba(42, 120, 150, 0.2); padding: 4px 10px; border-radius: 6px;">🛠️ Full-Stack</span>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid rgba(61, 59, 56, 0.1); padding-top: 14px; margin-top: 4px; display: flex; justify-content: center; width: 100%;">
+                <button class="btn-glass-action btn-glass-yes" onclick="closeDevModal()" style="padding: 10px 24px; font-size: 13px; font-weight: 700; background: #2a7896; color: white; border: none; box-shadow: 0 4px 12px rgba(42, 120, 150, 0.3);">
+                    Cool! Back to Terminal
+                </button>
             </div>
         </div>
     </dialog>
@@ -1935,6 +2002,7 @@ Example prompts:
              🎯  ABHYAS INTERVIEW PREP CORE TERMINAL  🎯               
 ========================================================================
 Session cleared! MENTOR ADAPT ENGINE is still ACTIVE ✨
+👨‍💻 ARCHITECT: <a href="javascript:void(0)" onclick="openDevModal()" style="color:#2a7896; font-weight:800; text-decoration:underline; cursor:pointer;">Jayesh Kumar</a>
 
 I auto-sense your level from every message and reply accordingly:
    🧒 Child  •  🌱 Beginner  •  📚 Intermediate  •  🔬 Expert
@@ -2295,6 +2363,9 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
 
             update(panelW, panelH) {
+                // Prevent off-screen displacement during initial page load layout resolution
+                if (panelW < 200 || panelH < 200) return;
+
                 const conf = this.spriteConfig.states[this.currentState];
                 if (!conf) return;
 
@@ -2530,7 +2601,13 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
         const ttsCustomLanguageInput = document.getElementById('ttsCustomLanguageInput');
         const ttsCustomLanguageInputGroup = document.getElementById('ttsCustomLanguageInputGroup');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
-        const btnClearKey = document.getElementById('btnClearKey');
+        const devModal = document.getElementById('devModal');
+        function openDevModal() {
+            if (devModal) devModal.showModal();
+        }
+        function closeDevModal() {
+            if (devModal) devModal.close();
+        }
 
         async function openApiKeyModal() {
             const currentGemini     = localStorage.getItem('abhyas_user_api_key') || '';
