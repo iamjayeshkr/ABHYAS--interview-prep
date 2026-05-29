@@ -3,15 +3,32 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Helper to execute fetch calls with strict abort timeouts to prevent slow model queue delays
-async function fetchWithTimeout(url, options, timeoutMs = 2000) {
+// ─────────────────────────────────────────────────────────────────────────────
+// RESPONSE CACHE — LRU in-memory cache for common/repeated questions
+// Skips the API entirely for repeat queries → saves quota + reduces latency
+// ─────────────────────────────────────────────────────────────────────────────
+const responseCache = new Map();
+const CACHE_MAX_SIZE = 500;
+
+function getCacheKey(message, level) {
+    return `${level}:${message.trim().toLowerCase().slice(0, 120)}`;
+}
+
+function cacheSet(key, value) {
+    if (responseCache.size >= CACHE_MAX_SIZE) {
+        responseCache.delete(responseCache.keys().next().value);
+    }
+    responseCache.set(key, value);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TIMEOUT HELPER
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchWithTimeout(url, options, timeoutMs = 8000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
     try {
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
-        });
+        const response = await fetch(url, { ...options, signal: controller.signal });
         clearTimeout(id);
         return response;
     } catch (err) {
@@ -20,239 +37,394 @@ async function fetchWithTimeout(url, options, timeoutMs = 2000) {
     }
 }
 
-// Asynchronous helper to query cloud models via OpenRouter with a blazing-fast, timed candidate cascade
-async function tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey) {
-    if (!openRouterKey) {
-        throw new Error("No OpenRouter Key provided.");
+// ─────────────────────────────────────────────────────────────────────────────
+// OPENAI-COMPATIBLE PROVIDER CALL
+// ─────────────────────────────────────────────────────────────────────────────
+async function callOpenAICompatible(baseUrl, apiKey, model, messages, timeoutMs = 8000) {
+    const response = await fetchWithTimeout(baseUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey.trim()}`,
+            'HTTP-Referer': 'https://abhyas-interview-prep.vercel.app',
+            'X-Title': 'ABHYAS Prep Terminal'
+        },
+        body: JSON.stringify({ model, messages, stream: false })
+    }, timeoutMs);
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    const messages = [
-        { role: 'system', content: systemPrompt }
-    ];
+    const data = await response.json();
+    if (data.error) throw new Error(`API Error: ${JSON.stringify(data.error)}`);
+    if (!data.choices || data.choices.length === 0) throw new Error('Empty choices returned.');
 
-    if (history && history.length > 0) {
-        history.forEach(msg => {
-            messages.push({
-                role: msg.role === 'user' ? 'user' : 'assistant',
-                content: msg.content
-            });
-        });
-    }
-
-    let currentMessageText = message;
-    if (context) {
-        currentMessageText = `[REFERENCE CONTEXT DOCUMENT PROVIDED BY USER]:\n${context}\n\n[USER INSTRUCTION]:\n${message}`;
-    }
-    messages.push({
-        role: 'user',
-        content: currentMessageText
-    });
-
-    // Prioritize openrouter/free first for instant auto-routing to the fastest free model, with resilient backups
-    const candidateModels = [
-        'openrouter/free',
-        'meta-llama/llama-3.2-3b-instruct:free',
-        'qwen/qwen3-coder:free'
-    ];
-
-    let lastError = null;
-    for (const model of candidateModels) {
-        try {
-            console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud model "${model}"...`);
-            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${openRouterKey.trim()}`,
-                    'HTTP-Referer': 'http://localhost:5001',
-                    'X-Title': 'ABHYAS Prep Terminal'
-                },
-                body: JSON.stringify({
-                    model: model,
-                    messages: messages,
-                    stream: false
-                })
-            }, 2000); // Strict 2-second timeout per candidate!
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
-            }
-
-            const data = await response.json();
-            if (data.error) {
-                throw new Error(`API Error: ${JSON.stringify(data.error)}`);
-            }
-            if (!data.choices || data.choices.length === 0) {
-                throw new Error("Returned empty choices.");
-            }
-
-            return {
-                content: data.choices[0].message.content,
-                modelUsed: model
-            };
-        } catch (err) {
-            console.warn(`⚠️ [OPENROUTER CLOUD FALLBACK]: Attempt with "${model}" failed:`, err.message);
-            lastError = err;
-        }
-    }
-    throw lastError || new Error("All OpenRouter cloud candidate models failed.");
+    return data.choices[0].message.content;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// BUILD messages array
+// ─────────────────────────────────────────────────────────────────────────────
+function buildMessages(systemPrompt, message, context, history) {
+    const messages = [{ role: 'system', content: systemPrompt }];
+
+    if (history && history.length > 0) {
+        history.forEach(msg => messages.push({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
+    }
+
+    const userText = context
+        ? `[REFERENCE CONTEXT DOCUMENT]:\n${context}\n\n[USER INSTRUCTION]:\n${message}`
+        : message;
+
+    messages.push({ role: 'user', content: userText });
+    return messages;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ███████╗███╗   ███╗ █████╗ ██████╗ ████████╗    ██╗     ███████╗██╗   ██╗███████╗██╗
+// ██╔════╝████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝    ██║     ██╔════╝██║   ██║██╔════╝██║
+// ███████╗██╔████╔██║███████║██████╔╝   ██║       ██║     █████╗  ██║   ██║█████╗  ██║
+// ╚════██║██║╚██╔╝██║██╔══██║██╔══██╗   ██║       ██║     ██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║
+// ███████║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║       ███████╗███████╗ ╚████╔╝ ███████╗███████╗
+// ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝       ╚══════╝╚══════╝  ╚═══╝  ╚══════╝╚══════╝
+//
+// MENTOR ADAPT ENGINE — detects user's knowledge level from their message
+// Returns: 'child' | 'beginner' | 'intermediate' | 'expert'
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Detects the user's expertise level from vocabulary, question structure,
+ * and jargon density. Works across ALL domains — not just tech.
+ *
+ * Signals used:
+ *   child      → very short / simple words / "what is" / "why does" / class-level vocabulary
+ *   beginner   → basic how-to questions, no jargon, simple sentence structure
+ *   intermediate → some domain terms, moderately structured, "how does X work under hood"
+ *   expert     → dense jargon, acronyms, nuanced comparisons, research-level phrasing
+ */
+function detectLevel(message) {
+    // ── Typo normalization: fix common misspellings before pattern matching ──
+    const typoMap = {
+        'transofrmer': 'transformer', 'transfomer': 'transformer', 'transformr': 'transformer',
+        'backpropogation': 'backpropagation',
+        'recusion': 'recursion', 'recurssion': 'recursion',
+        'algorythm': 'algorithm', 'algorithim': 'algorithm',
+        'nueral': 'neural', 'nural': 'neural',
+        'learing': 'learning', 'lerning': 'learning',
+        'classifcation': 'classification', 'clasification': 'classification',
+        'optimzation': 'optimization', 'optmization': 'optimization',
+        'gradiant': 'gradient', 'graident': 'gradient',
+        'atention': 'attention', 'attension': 'attention',
+        'embeding': 'embedding', 'embeddng': 'embedding',
+        'tokennizer': 'tokenizer', 'toeknizer': 'tokenizer',
+    };
+    let normalized = message.trim().toLowerCase();
+    // Use word-split replacement (more reliable than regex \b in all runtimes)
+    normalized = normalized.split(/\s+/).map(word => typoMap[word] || word).join(' ');
+    const msg = normalized;
+    const wordCount = msg.split(/\s+/).length;
+
+    // ── EXPERT signals ──
+    const expertPatterns = [
+        /\b(amortized|asymptotic|eigenvector|stochastic|isomorphic|idempotent|polymorphism|concurrency|race condition|deadlock|entropy|gradient descent|backpropagation|hyperparameter|quantization|transformer|attention mechanism|attention head|self.?attention|multi.?head|positional encoding|tokenizer|embedding|llm|gpt|bert|t5|diffusion model|vae|gan|rlhf|fine.?tun|lora|rag|retrieval augmented|vector database|topology|manifold|differential equation|laplace|fourier|convex optimization|bayes theorem|p-value|multicollinearity|heteroscedasticity|anova|regression coefficient|time complexity|space complexity|big.?o|nlogn|dynamic programming|memoization|dijkstra|bellman.ford|segment tree|fenwick|trie|bitmask|coroutine|async.?await internals|event loop internals|jit compiler|garbage collector|memory leak|heap dump|profiling|benchmark|throughput|latency|p99|sla|slo|cap theorem|acid|base consistency|sharding|replication|consensus|raft|paxos|grpc|protobuf|graphql resolver|oauth|jwt|csrf|xss|sql injection|buffer overflow|zero.day|cve|rce)\b/i,
+    ];
+
+    // ── INTERMEDIATE signals ──
+    const intermediatePatterns = [
+        /\b(api|rest|http|json|database|sql|array|loop|function|class|object|algorithm|recursion|stack|queue|linked list|binary tree|sorting|searching|framework|library|component|state|props|hook|async|promise|callback|closure|prototype|inheritance|interface|module|import|export|variable|pointer|reference|complexity|index|query|schema|migration|deployment|server|client|frontend|backend|full.?stack|machine learning|deep learning|neural network|neural networks|artificial intelligence|natural language|nlp|computer vision|model|training|dataset|feature|layer|activation|loss function|gradient|epoch|batch|overfitting|underfitting|regression|classification|clustering|pca|svm|random forest|photosynthesis|mitosis|meiosis|dna|rna|protein|enzyme|atom|molecule|bond|reaction|periodic table|newton|velocity|acceleration|momentum|force|energy|thermodynamics|entropy|magnetism|electric field|circuit|current|voltage|resistance|integration|differentiation|derivative|limit|matrix|vector|determinant)\b/ig,
+    ];
+
+    // ── CHILD signals ──
+    const childPatterns = [
+        /\b(what is|why does|how does|can you explain|i don.?t understand|what are|tell me about|whats|hows|so like|basically|simply|easy way|in simple words|for kids|class [1-9]|grade [1-9]|school|teacher said|my homework|simple explain)\b/i,
+    ];
+
+    // ── Count expert jargon density ──
+    let expertScore = 0;
+    let intermediateScore = 0;
+
+    expertPatterns.forEach(p => { if (p.test(msg)) expertScore += 3; });
+    intermediatePatterns.forEach(p => { const matches = msg.match(p); if (matches) intermediateScore += matches.length; });
+
+    // Child signal only counts if NO domain jargon is present
+    // "what is transformer in ml" → child phrase + expert jargon → NOT child
+    const childScore = (childPatterns.some(p => p.test(msg)) && expertScore === 0 && intermediateScore === 0) ? 2 : 0;
+
+    // Word-count heuristic: very short simple questions lean child/beginner
+    const isVeryShort = wordCount <= 6;
+    const hasTechSymbols = /[<>{}()\[\]=+\-*\/\\|&^%$@!`~]/.test(message);
+    const hasMath = /\b\d+\s*[\+\-\*\/\^]\s*\d+\b|\bintegral|sigma|sum of|derivative of\b/.test(msg);
+
+    if (hasTechSymbols) expertScore += 2;
+    if (hasMath) intermediateScore += 2;
+
+    // Final decision
+    // Rule: if ANY domain jargon detected, minimum level is intermediate (never child)
+    if (expertScore >= 3) return 'expert';
+    if (intermediateScore >= 1) return 'intermediate';   // any jargon → at least intermediate
+    if (childScore >= 2 || (isVeryShort && !hasTechSymbols)) return 'child';
+    return 'beginner';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DOMAIN DETECTOR — what field is the user asking about?
+// Returns one of: tech | science | math | history | general | interview
+// ─────────────────────────────────────────────────────────────────────────────
+function detectDomain(message) {
+    // Same typo normalization as detectLevel
+    const typoMap = {
+        'transofrmer': 'transformer', 'transfomer': 'transformer',
+        'nueral': 'neural', 'nural': 'neural',
+        'learing': 'learning', 'lerning': 'learning',
+        'algorythm': 'algorithm', 'gradiant': 'gradient',
+    };
+    const msg = message.trim().toLowerCase().split(/\s+/).map(w => typoMap[w] || w).join(' ');
+
+    if (/\b(interview|resume|cv|hr|behavioral|star method|tell me about yourself|why should we hire|salary|offer|placement|job|internship|leetcode|system design|mock)\b/.test(msg)) return 'interview';
+    if (/\b(code|coding|algorithm|api|database|sql|javascript|python|react|node|server|cloud|deploy|git|docker|kubernetes|linux|compiler|runtime|framework|css|html|frontend|backend|ml|ai|machine learning|deep learning|neural network|neural networks|llm|gpt|bert|transformer|nlp|computer vision|data science|model|training|dataset|tensorflow|pytorch|keras|scikit|numpy|pandas|cuda|gpu training)\b/.test(msg)) return 'tech';
+    if (/\b(physics|chemistry|biology|cell|atom|molecule|dna|photosynthesis|evolution|gravity|force|energy|element|periodic|enzyme|ecosystem|organism|species|quantum|relativity)\b/.test(msg)) return 'science';
+    if (/\b(math|maths|algebra|geometry|calculus|integral|derivative|matrix|equation|probability|statistics|prime|fraction|percentage|theorem|proof|number|angle|trigonometry)\b/.test(msg)) return 'math';
+    if (/\b(history|war|ancient|empire|revolution|independence|civilization|king|queen|president|democracy|politics|economics|gdp|inflation|policy|constitution|amendment)\b/.test(msg)) return 'history';
+
+    return 'general';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADAPTIVE SYSTEM PROMPT BUILDER
+// Builds a tailored system prompt based on detected level + domain
+// ─────────────────────────────────────────────────────────────────────────────
+function buildAdaptiveSystemPrompt(level, domain) {
+
+    // ── Persona core (always applies) ──
+    const core = `You are ABHYAS — a brilliant, warm, and endlessly patient mentor who can explain ANYTHING from ANY domain of human knowledge: technology, science, mathematics, history, economics, philosophy, arts, and more.
+
+You have a magical superpower: you instantly sense how much the user knows and speak EXACTLY at their level — never too simple, never too complex.
+
+UNIVERSAL RULES (always follow these):
+1. Speak in natural Hinglish (Hindi + English mix) with a warm, encouraging masculine tone.
+2. ALWAYS answer the actual question directly — never go off-topic.
+3. For interview answers, score as: [ABHYAS SCORE: X/10] with 👍 Kya accha tha / 🔧 Kahan improvement chahiye.
+4. Keep replies short by default (2-3 sentences). End with: *[Hint: Aur detail chahiye toh → expand karo!]*
+5. Only give detailed explanations when user says "expand", "deep-dive", "elaborate", or "tell me more".
+6. If a reference document is provided, anchor all feedback to it.
+7. ALWAYS use at least ONE real-world analogy or example — something the user can picture in their daily life.`;
+
+    // ── Level-specific tone layer ──
+    const levelLayer = {
+        child: `
+AUDIENCE: You are speaking to a young child (Class 1–5 level, age 6–10).
+COMMUNICATION STYLE FOR THIS CHILD:
+- Use the SIMPLEST words possible. No jargon at all. If you must use a new word, immediately explain it in brackets.
+- Use very short sentences. Max 1-2 sentences per thought.
+- Use fun, relatable analogies — toys, food, cartoons, animals, home things (e.g. "think of RAM like a lunch box — it holds only today's food").
+- Add encouraging words: "Bahut badiya!", "Sahi socha tumne!", "Kya smart question hai!"
+- Use emojis generously to make it visual and playful 🌟🍎🐘🚂
+- Never use mathematical notation or complex diagrams.
+- If domain is 'tech': compare to toys, games, magic.
+- If domain is 'science': compare to animals, kitchen, sky, body.
+- If domain is 'math': use apples, chocolates, counting fingers.`,
+
+        beginner: `
+AUDIENCE: You are speaking to a complete beginner / fresher (someone who is new to this topic).
+COMMUNICATION STYLE FOR THIS BEGINNER:
+- Avoid heavy jargon. When you must use a term, explain it in one simple sentence.
+- Use relatable real-world analogies (e.g. "Array is like a row of lockers in school — each locker has a number").
+- Build up from the simplest version first, then add one layer of depth.
+- Tone: friendly, encouraging, never condescending.
+- End with a "Try this" challenge or a simple next-step suggestion.`,
+
+        intermediate: `
+AUDIENCE: You are speaking to someone with some knowledge who wants to go deeper.
+COMMUNICATION STYLE FOR THIS INTERMEDIATE LEARNER:
+- You can use domain terms but briefly confirm understanding ("You already know X, so think of Y as...").
+- Give practical examples: real code snippets, real experiments, real-world applications.
+- Explain the "why" behind concepts, not just the "what".
+- Encourage curiosity: "Isko samajhne ke baad, tum Z bhi explore karo!"`
+
+,
+        expert: `
+AUDIENCE: You are speaking to a domain expert, researcher, or senior professional.
+COMMUNICATION STYLE FOR THIS EXPERT:
+- Skip basic explanations. Use precise technical vocabulary fluently.
+- Engage as a peer / fellow expert: share nuances, trade-offs, edge cases.
+- Reference deeper concepts, papers, or advanced patterns where relevant.
+- Use Hinglish professionally — it should feel like two senior engineers having chai ☕ and discussing hard problems.
+- For interview prep: push hard on depth, edge cases, system design trade-offs, and follow-up probing questions.`
+    };
+
+    // ── Domain-specific addition ──
+    const domainLayer = {
+        tech:      `\nDOMAIN CONTEXT: This is a technology/coding question. Use programming examples, system analogies, and code where helpful.`,
+        science:   `\nDOMAIN CONTEXT: This is a science question. Use nature, lab, and everyday-life examples. Make abstract science feel tangible.`,
+        math:      `\nDOMAIN CONTEXT: This is a mathematics question. Show the intuition FIRST, then the formula. Use visual/physical analogies before symbols.`,
+        history:   `\nDOMAIN CONTEXT: This is a history/social science question. Use storytelling, connect events to cause-and-effect chains, and make it feel like a vivid story.`,
+        interview: `\nDOMAIN CONTEXT: This is an interview preparation question. Apply the STAR method where relevant, score answers, and give actionable improvement tips.`,
+        general:   `\nDOMAIN CONTEXT: This is a general knowledge question. Be comprehensive yet concise. Connect the topic to everyday Indian life where possible.`
+    };
+
+    return `${core}\n${levelLayer[level] || levelLayer.beginner}\n${domainLayer[domain] || domainLayer.general}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN CHAT ROUTE
+// ─────────────────────────────────────────────────────────────────────────────
 router.post('/chat', async (req, res) => {
     const { message, context, history } = req.body;
 
     if (!message) {
-        return res.status(400).json({ error: "Message is required." });
+        return res.status(400).json({ error: 'Message is required.' });
     }
 
-    const systemPrompt = `
-You are ABHYAS, Jayesh's highly advanced AI Universal Exam & Interview Preparation Companion.
-Your primary directive is to help Jayesh master premium technical and behavioral interviews, competitive exams, certification syllabus papers, and textbook study notes.
+    // ── Detect level + domain for this specific message ──
+    const detectedLevel  = detectLevel(message);
+    const detectedDomain = detectDomain(message);
+    const adaptivePrompt = buildAdaptiveSystemPrompt(detectedLevel, detectedDomain);
 
-CORE BEHAVIORAL DIRECTIVES:
+    console.log(`🧠 [MENTOR ADAPT]: Level="${detectedLevel}" | Domain="${detectedDomain}"`);
 
-1. HINGLISH DIALOGUE (NATURAL & COMFORTABLE - MASCULINE PERSONA):
-   - Speak in a natural, comfortable, and professional mix of Hindi and English (Hinglish), just like top tech engineers communicate.
-   - Speak in a supportive, professional MASCULINE (male) tone (e.g., use "sakta hoon", "samjhata hoon", "karta hoon" instead of feminine variants like "sakti hoon", "samjhati hoon", "karti hoon").
-   - Use Hindi phrasing for explanations, analogies, and encouragement, while keeping standard technical terms in English (e.g., "Bilkul Jayesh, closures ka concept main aapko interactive way mein samjhata hoon. Jab ek function apne outer lexical scope ko remember rakhta hai, use hum closure bolte hain...").
+    // ── Cache check (skip for context-anchored or expand requests) ──
+    const wantsExpand = /\b(expand|deep.?dive|elaborate|tell me more|detail)\b/i.test(message);
+    const cacheKey = getCacheKey(message, detectedLevel);
 
-2. EXAM & INTERVIEW SCORING (ONLY WHEN JAYESH ANSWERS A QUESTION):
-   - ONLY evaluate and score Jayesh when he is clearly providing an ANSWER to a mock question that you previously asked him, or when he says "here is my answer", "evaluate this", "rate my response", or similar.
-   - NEVER apply scoring/evaluation when Jayesh is asking YOU a direct question (e.g., "What is X?", "When does Y happen?", "Explain Z", "How does A work?"). In that case, simply answer concisely as per Rule 3.
-   - When evaluation IS appropriate, output a clear, highlighted score block:
-     [ABHYAS SCORE: X/10]
-   - Provide concrete feedback broken down into:
-     * 👍 **Kya accha tha** (What went well / correct facts)
-     * 🔧 **Kahan improvement chahiye** (Gaps, formula errors, filler words, or missing detail)
-     * Structure checks, STAR-method alignment (for interviews), or accuracy checks (for exams).
-
-3. TALK SMALL & CONCISE BY DEFAULT (EXPAND ON REQUEST):
-   - By default, you MUST keep your responses extremely short, concise, and snappy (typically 2-3 sentences max). Speak in a highly conversational and focused tone.
-   - Proactively suggest at the end of your response that Jayesh can ask to "expand" or "deep-dive" if he wants a detailed explanation, custom diagrams, or code blocks (e.g., "*[Hint: Agar details or code chahiye, toh ask me to 'expand' or 'deep-dive'!]*").
-   - ONLY write detailed explanations, code blocks, checklists, or custom ASCII diagrams if the user explicitly asks to "expand", "deep-dive", "elaborate", "tell me more", "explain in detail", or similar keywords in their prompt.
-
-4. INTERACTIVE MD CONCEPT TEACHING (ONLY ON EXPANSION REQUEST):
-   - When the user explicitly requests an expansion, deep-dive, or detailed explanation, structure your detailed answer as an interactive Markdown study guide.
-   - Use clear headers, checklists, bullet points, and code blocks.
-   - Draw custom ASCII diagrams or visual text flows to explain architectural data lines.
-   - End EVERY expanded explanation with a quick, engaging interactive challenge, follow-up quiz, or reflective question to prompt Jayesh (e.g., "Chalo ab ek simple challenge: Agar main continuous write operations karoon, toh custom index performance par kya impact padega? Aap try karo!").
-
-5. UNIVERSAL CONTEXT ANCHORING & DOCUMENT ANALYSIS:
-   - If a reference document (Resume, JD, syllabus, textbook chapters, study notes, or question banks) is uploaded, thoroughly analyze it.
-   - Anchor your questions, tests, mock scenarios, concept summaries, and critiques specifically to the uploaded materials.
-   - You must be able to test Jayesh on the exact concepts found in the document, explain tough ideas from it, and create practice tests or MCQs upon request.
-`;
-
-    const contents = [];
-
-    // Map conversation history to the SDK's expectations
-    if (history && history.length > 0) {
-        history.forEach(msg => {
-            contents.push({
-                role: msg.role === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.content }]
-            });
-        });
+    if (!context && !wantsExpand) {
+        const cached = responseCache.get(cacheKey);
+        if (cached) {
+            console.log('⚡ [CACHE HIT]: Returning cached response.');
+            return res.json({ reply: cached, cached: true, level: detectedLevel, domain: detectedDomain });
+        }
     }
 
-    // Format current user turn
-    let currentMessageText = message;
-    if (context) {
-        currentMessageText = `[REFERENCE CONTEXT DOCUMENT PROVIDED BY USER]:\n${context}\n\n[USER INSTRUCTION]:\n${message}`;
-    }
+    // ── Resolve API keys: header (user) → env → empty ──
+    const groqKey       = req.headers['x-groq-key']       || process.env.GROQ_API_KEY       || '';
+    const userGeminiKey = req.headers['x-api-key']        || process.env.GEMINI_API_KEY      || '';
+    const cerebrasKey   = req.headers['x-cerebras-key']   || process.env.CEREBRAS_API_KEY    || '';
+    const openRouterKey = req.headers['x-openrouter-key'] || process.env.OPENROUTER_API_KEY  || '';
 
-    contents.push({
-        role: 'user',
-        parts: [{ text: currentMessageText }]
-    });
-
-    const userApiKey = req.headers['x-api-key'];
-    const openRouterKey = req.headers['x-openrouter-key'];
-    let activeClient = aiClient;
-
-    if (userApiKey) {
-        console.log(`🔑 [ABHYAS CHAT]: User API Key header detected! Prefix: "${userApiKey.substring(0, 6)}...". Instantiating custom SDK client.`);
+    // Build Gemini client from whichever key is available
+    let geminiClient = aiClient; // server-env key (already initialized in config/ai.js)
+    if (userGeminiKey && userGeminiKey !== (process.env.GEMINI_API_KEY || '')) {
         try {
-            activeClient = new GoogleGenAI({ apiKey: userApiKey });
+            geminiClient = new GoogleGenAI({ apiKey: userGeminiKey });
         } catch (e) {
-            console.error("❌ Failed to initialize user-provided Gemini SDK client:", e.message);
+            console.error('❌ Failed to init Gemini client:', e.message);
+            geminiClient = null;
         }
-    } else {
-        console.log("ℹ [ABHYAS CHAT]: No custom API Key found in headers. Utilizing default server credentials.");
     }
 
-    if (!activeClient) {
-        console.log("🤖 Running simulated chat fallback...");
-        const isQueryingClosure = message.toLowerCase().includes("closure");
-        const wantsExpand = message.toLowerCase().match(/\b(expand|deep-dive|deepdive|elaborate|detail|more)\b/);
+    const messages = buildMessages(adaptivePrompt, message, context, history);
 
-        let simulatedReply = `🤖 **[SIMULATED ABHYAS - KEY REQUIRED]**\n\nI received your prompt: "${message}". To enable live model responses, please click the "🔑 Set API Key" button at the top right of the terminal and add your own Gemini/OpenRouter API Key!\n\n*[Hint: Try asking about 'Closures' or type 'expand' to see simulated responses!]*`;
+    // ─────────────────────────────────────────────────────────────────────────
+    // FLAT CASCADE — try each provider independently, stop at first success.
+    // ANY single key working = full response. Order: Groq → Gemini → Cerebras → OpenRouter
+    // ─────────────────────────────────────────────────────────────────────────
 
-        if (isQueryingClosure) {
-            if (wantsExpand) {
-                simulatedReply = `🤖 **[SIMULATED ABHYAS - EXPANDED GUIDE]**\n\n### 📚 Complete Guide: Closures in JavaScript\n\nIn JavaScript, **closures** occur when a nested function retains access to the variables of its parent scope even after that parent function has finished executing.\n\n#### 💻 Example Code:\n\`\`\`javascript\nfunction outerFunction(outerVariable) {\n    return function innerFunction(innerVariable) {\n        console.log('Outer Variable: ' + outerVariable);\n        console.log('Inner Variable: ' + innerVariable);\n    }\n}\nconst newFunction = outerFunction('outside');\nnewFunction('inside'); // Outputs both!\n\`\`\`\n\n#### 🎯 Interactive Challenge:\nCan you write a function that acts as a private counter using closures? Try typing it in the terminal!`;
-            } else {
-                simulatedReply = `🤖 **[SIMULATED ABHYAS - TALK SMALL]**\n\nClosures JavaScript ka ek special feature hain jahan ek nested function apne outer (parent) lexical scope variables ko dynamic context access provide karta hai.\n\n*(To get a complete guide, ASCII diagrams, and code snippets, ask me to **"expand"** or **"deep-dive"**!)*`;
-            }
-        } else if (wantsExpand) {
-            simulatedReply = `🤖 **[SIMULATED ABHYAS - EXPANDED VIEW]**\n\nHere is the detailed deep-dive expansion for your request: "${message}".\n\n1. **Detailed Explanation**: We provide architectural deep-dives here.\n2. **Best Practices**: Ensure clean, modular coding standards.\n\nTo enable live custom models, configure your key using the settings button in the top right!`;
+    // ── TIER 1: GROQ (fastest, <500ms) ──
+    if (groqKey) {
+        try {
+            console.log('⚡ [TIER 1 - GROQ]: Trying Groq...');
+            const content = await callOpenAICompatible(
+                'https://api.groq.com/openai/v1/chat/completions',
+                groqKey, 'llama-3.3-70b-versatile', messages, 8000
+            );
+            console.log('✔ [GROQ]: OK');
+            if (!context && !wantsExpand) cacheSet(cacheKey, content);
+            return res.json({ reply: content, provider: 'groq', level: detectedLevel, domain: detectedDomain });
+        } catch (err) {
+            console.warn('⚠️ [GROQ]: Failed:', err.message);
         }
-
-        return res.json({
-            reply: simulatedReply
-        });
     }
 
-    try {
-        console.log("🤖 ABHYAS Terminal querying Gemini API...");
-        const response = await activeClient.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: contents,
-            config: {
-                systemInstruction: systemPrompt,
-                temperature: 0.7
+    // ── TIER 2: GEMINI (best quality, 1M context) ──
+    if (geminiClient) {
+        try {
+            console.log('🤖 [TIER 2 - GEMINI]: Trying Gemini...');
+            const contents = [];
+            if (history && history.length > 0) {
+                history.forEach(msg => contents.push({
+                    role: msg.role === 'user' ? 'user' : 'model',
+                    parts: [{ text: msg.content }]
+                }));
             }
-        });
-
-        res.json({
-            reply: response.text
-        });
-    } catch (err) {
-        console.error("❌ Gemini API Error in ABHYAS Chat:", err.message);
-
-        // Attempt Tier 2 Fallback: Cloud OpenRouter Cascade Fallback
-        if (openRouterKey) {
-            try {
-                const { content, modelUsed } = await tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey);
-                console.log(`✔ [ABHYAS CHAT]: Successfully retrieved cloud OpenRouter response using ${modelUsed}!`);
-                return res.json({
-                    reply: `🤖 **[ABHYAS COACH - CLOUD FALLBACK ACTIVE (${modelUsed})]**\n\n${content}`
-                });
-            } catch (openRouterErr) {
-                console.warn("⚠️ [ABHYAS CHAT]: Cloud OpenRouter fallback failed:", openRouterErr.message);
-            }
-        }
-
-        // Tier 3 Fallback: Graceful simulated text dialogs
-        const isQuotaExceeded = err.message.toLowerCase().includes("quota") || err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED");
-        const isKeyInvalid = err.message.toLowerCase().includes("key not valid") || err.message.includes("400") || err.message.toLowerCase().includes("invalid_argument") || err.message.toLowerCase().includes("api_key_invalid");
-
-        if (isQuotaExceeded || isKeyInvalid) {
-            console.log("ℹ [ABHYAS CHAT]: API Key has quota limits or is invalid. Engaging intelligent simulated fallback.");
-
-            let explanation = "Main aapke queries ko capture kar paa raha hoon! Lekin aesa lagta hai ki aapka Gemini API Key currently **Rate Limited (429 Quota Exceeded)** hai, ya is key par free-tier requests block hain (Limit: 0).";
-            if (isKeyInvalid) {
-                explanation = "Main aapke queries ko capture kar paa raha hoon! Lekin aesa lagta hai ki jo Gemini API Key enter kiya gaya hai, woh **Invalid** hai ya active nahi hai.";
-            }
-
-            return res.json({
-                reply: `🤖 **[ABHYAS COACH - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: ${explanation} (Hum yahan temporary simulated coaching mode mein run kar rahe hain taaki aapki preparation halt na ho!)\n\n💡 Tip: Aap settings modal 🔑 mein **OpenRouter API Key** bhi configure kar sakte hain taaki quota limits par automatic cloud fallback active rahe!*\n\n---\n\nBilkul! Main aapki help karta hoon. Aapne poocha: "${message}". \n\nClosures, indexing, or system queries ho — jab bhi hum Gemini API constraints encounter karte hain, ABHYAS intelligent simulations provide karta hai.\n\n### 💡 Key Concept Highlight:\n1. **Lexical Scopes & Closures**: In JS, functions nested inside outer functions always hold on to the variables of their parent context, forming a closure.\n2. **Star Method Behavioral Prep**: Use Situation, Task, Action, Result to anchor your behavioral answers.\n\nBatao Jayesh, aap is question ka mock answer try karna chahte ho? Write it down here, and main use evaluate karke aapko readiness rating doonga!`
+            const userText = context
+                ? `[REFERENCE CONTEXT DOCUMENT]:\n${context}\n\n[USER INSTRUCTION]:\n${message}`
+                : message;
+            contents.push({ role: 'user', parts: [{ text: userText }] });
+            const response = await geminiClient.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents,
+                config: { systemInstruction: adaptivePrompt, temperature: 0.7 }
             });
+            console.log('✔ [GEMINI]: OK');
+            if (!context && !wantsExpand) cacheSet(cacheKey, response.text);
+            return res.json({ reply: response.text, provider: 'gemini', level: detectedLevel, domain: detectedDomain });
+        } catch (err) {
+            console.warn('⚠️ [GEMINI]: Failed:', err.message);
         }
-
-        res.status(500).json({ error: "Failed to connect to Gemini API.", details: err.message });
     }
+
+    // ── TIER 3: CEREBRAS (1M tokens/day free) ──
+    if (cerebrasKey) {
+        try {
+            console.log('🧠 [TIER 3 - CEREBRAS]: Trying Cerebras...');
+            const content = await callOpenAICompatible(
+                'https://api.cerebras.ai/v1/chat/completions',
+                cerebrasKey, 'llama3.1-70b', messages, 8000
+            );
+            console.log('✔ [CEREBRAS]: OK');
+            if (!context && !wantsExpand) cacheSet(cacheKey, content);
+            return res.json({ reply: content, provider: 'cerebras', level: detectedLevel, domain: detectedDomain });
+        } catch (err) {
+            console.warn('⚠️ [CEREBRAS]: Failed:', err.message);
+        }
+    }
+
+    // ── TIER 4: OPENROUTER (11+ free models, last resort) ──
+    if (openRouterKey) {
+        const orModels = ['openrouter/auto', 'meta-llama/llama-3.2-3b-instruct:free', 'qwen/qwen3-coder:free'];
+        for (const model of orModels) {
+            try {
+                console.log(`🌐 [TIER 4 - OPENROUTER]: Trying model "${model}"...`);
+                const content = await callOpenAICompatible(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    openRouterKey, model, messages, 8000
+                );
+                console.log(`✔ [OPENROUTER]: OK via ${model}`);
+                if (!context && !wantsExpand) cacheSet(cacheKey, content);
+                return res.json({ reply: content, provider: 'openrouter', level: detectedLevel, domain: detectedDomain });
+            } catch (e) {
+                console.warn(`⚠️ [OPENROUTER] "${model}" failed:`, e.message);
+            }
+        }
+    }
+
+    // ── All providers failed or no keys at all ──
+    const hasAnyKey = groqKey || geminiClient || cerebrasKey || openRouterKey;
+    return res.json({
+        reply: hasAnyKey
+            ? `⚠️ **Sabhi providers temporarily down hain.**\n\nThodi der baad try karo — Groq/OpenRouter free tiers kabhi kabhi busy ho jaate hain.\n\nAapka sawaal tha: *"${message}"*`
+            : `⚠️ **Koi API key nahi mili.**\n\nSettings 🔑 mein **Groq** (free, console.groq.com) ya **OpenRouter** (free, openrouter.ai) key add karo — ek bhi kaafi hai!`,
+        provider: 'none',
+        level: detectedLevel,
+        domain: detectedDomain
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEVEL DETECTION UTILITY ROUTE — lets the frontend show level badge
+// POST /api/abhyas/detect-level  { message }
+// Returns { level, domain }
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/detect-level', (req, res) => {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'message required' });
+    const level  = detectLevel(message);
+    const domain = detectDomain(message);
+    res.json({ level, domain });
 });
 
 module.exports = router;

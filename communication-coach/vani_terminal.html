@@ -405,6 +405,32 @@
             font-weight: 600;
         }
 
+        /* ── MENTOR ADAPT BADGE ── */
+        .mentor-adapt-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 2px 9px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+        .badge-child       { background: rgba(255, 196, 87, 0.15); color: #ffc457; border: 1px solid rgba(255, 196, 87, 0.3); }
+        .badge-beginner    { background: rgba(107, 179, 145, 0.15); color: #6bb391; border: 1px solid rgba(107, 179, 145, 0.3); }
+        .badge-intermediate{ background: rgba(138, 118, 233, 0.15); color: #8a7fec; border: 1px solid rgba(138, 118, 233, 0.3); }
+        .badge-expert      { background: rgba(226, 158, 103, 0.15); color: #e29e67; border: 1px solid rgba(226, 158, 103, 0.3); }
+
+        .domain-tag {
+            font-size: 9.5px;
+            opacity: 0.55;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
         /* Prompt Input Bar */
         .terminal-input-bar {
             background: #111013;
@@ -803,21 +829,27 @@
             <div class="terminal-screen" id="terminalScreen">
                 <div class="abhyas-greeting">
 ========================================================================
-         📚  ABHYAS UNIVERSAL EXAM & INTERVIEW PREP TERMINAL  📚         
+             🎯  ABHYAS INTERVIEW PREP CORE TERMINAL  🎯               
 ========================================================================
-Welcome, Jayesh! I am ABHYAS, your dedicated AI Prep Companion.
+Welcome! I am ABHYAS, your AI Coach and Universal Mentor. 
 
-I've been optimized to help you master any Exam, Test, Certification,
-or Interview directly without any complex dashboards. 
+✨ NEW: MENTOR ADAPT ENGINE is ACTIVE
+   I auto-detect your level from every message and reply accordingly:
+   🧒 Child Mode → Super simple, fun analogies
+   🌱 Beginner   → Step-by-step, no jargon
+   📚 Intermediate → Concepts + real examples
+   🔬 Expert      → Peer-level, precise, deep
 
-📂 UPLOAD ANY DOCUMENT (PDF, TXT, Markdown, Notes, or Syllabus) using
-   the panel on the left, and I will analyze it instantly!
+💡 Ask me ANYTHING across any domain:
+   💻 Tech  •  🔭 Science  •  📐 Math  •  📜 History  •  🌐 General
+   🎯 Interview Prep  •  System Design  •  Behavioral  •  DSA
 
-Ask me anything based on the document, or try these prompts:
-  - "Create a mock test with multiple choice questions based on my notes"
-  - "Summarize the key formulas/concepts from this syllabus"
-  - "Ask me a technical question from chapter 3 and grade my answer"
-  - "Give me a mock interview behavioral question based on my resume"
+Drop your Resume/JD PDF on the left to get context-anchored feedback!
+Example prompts:
+  → "What is photosynthesis?" (will auto-detect: child/beginner level)
+  → "Explain gradient descent with backpropagation" (expert mode)
+  → "Tell me about yourself mock answer" (interview mode)
+  → "What is recursion? Explain simply" (beginner mode)
 ========================================================================
                 </div>
             </div>
@@ -836,25 +868,57 @@ Ask me anything based on the document, or try these prompts:
             <button class="dialog-close" onclick="closeApiKeyModal()">×</button>
         </div>
         <div class="security-notice">
-            🛡️ <strong>100% Local & Secure:</strong> Credentials are stored only in your local browser storage and sent directly to Google SDK or OpenRouter. They are never saved on our servers.
+            🛡️ <strong>100% Local & Secure:</strong> Keys are stored only in your browser and never saved on our servers. ABHYAS auto-routes requests across all configured providers for maximum uptime.
         </div>
-        <div class="input-group">
-            <label class="input-label" for="userApiKeyInput">Gemini API Key</label>
+
+        <!-- GROQ — Tier 1 Speed Provider -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="groqKeyInput">⚡ Groq API Key <span style="color:var(--success);font-size:10px;">[RECOMMENDED — 14,400 req/day FREE]</span></label>
+            <div class="input-wrapper">
+                <input type="password" id="groqKeyInput" class="key-input" placeholder="gsk_..." autocomplete="off">
+                <button type="button" class="btn-toggle-visibility" id="btnToggleGroqVisibility" onclick="toggleGroqVisibility()" title="Toggle Visibility">👁️</button>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                🚀 Fastest provider — Llama 3.3 70B at &lt;500ms. Get key free at <strong>console.groq.com</strong> (no credit card).
+            </div>
+        </div>
+
+        <!-- GEMINI — Tier 1 Quality Provider -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="userApiKeyInput">✨ Gemini API Key <span style="color:var(--text-muted);font-size:10px;">[1,500 req/day FREE, 1M context]</span></label>
             <div class="input-wrapper">
                 <input type="password" id="userApiKeyInput" class="key-input" placeholder="AIzaSy..." autocomplete="off">
                 <button type="button" class="btn-toggle-visibility" id="btnToggleGeminiVisibility" onclick="toggleKeyVisibility()" title="Toggle Visibility">👁️</button>
             </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                Best for deep analysis & document-anchored coaching. Get key at <strong>ai.google.dev</strong>.
+            </div>
         </div>
+
+        <!-- CEREBRAS — Tier 3 Overflow Provider -->
         <div class="input-group" style="margin-top: 8px;">
-            <label class="input-label" for="openRouterKeyInput">OpenRouter API Key (Cloud Fallback)</label>
+            <label class="input-label" for="cerebrasKeyInput">🧠 Cerebras API Key <span style="color:var(--text-muted);font-size:10px;">[1M tokens/day FREE]</span></label>
+            <div class="input-wrapper">
+                <input type="password" id="cerebrasKeyInput" class="key-input" placeholder="csk-..." autocomplete="off">
+                <button type="button" class="btn-toggle-visibility" id="btnToggleCerebrasVisibility" onclick="toggleCerebrasVisibility()" title="Toggle Visibility">👁️</button>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                Overflow provider — kicks in when Groq/Gemini quota runs out. Free at <strong>cerebras.ai</strong>.
+            </div>
+        </div>
+
+        <!-- OPENROUTER — Tier 4 Last Resort -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="openRouterKeyInput">🌐 OpenRouter API Key <span style="color:var(--text-muted);font-size:10px;">[Last resort fallback]</span></label>
             <div class="input-wrapper">
                 <input type="password" id="openRouterKeyInput" class="key-input" placeholder="sk-or-v1-..." autocomplete="off">
                 <button type="button" class="btn-toggle-visibility" id="btnToggleOpenRouterVisibility" onclick="toggleOpenRouterVisibility()" title="Toggle Visibility">👁️</button>
             </div>
             <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
-                💡 <strong>100% Cloud-Based:</strong> Enter your personal OpenRouter API Key to run <code>qwen2.5:3b</code> (or Llama 3) for free directly in the cloud. No local models or active ngrok tunnels needed!
+                11+ free models. Used only when all other providers fail. Free at <strong>openrouter.ai</strong>.
             </div>
         </div>
+
         <div class="dialog-actions" style="margin-top: 16px;">
             <button class="btn-dialog btn-dialog-cancel" onclick="closeApiKeyModal()">Cancel</button>
             <button id="btnClearKey" class="btn-dialog btn-dialog-clear" onclick="clearApiKey()">Clear All</button>
@@ -1043,21 +1107,14 @@ Ask me anything based on the document, or try these prompts:
                     terminalScreen.innerHTML = `
                         <div class="abhyas-greeting">
 ========================================================================
-         📚  ABHYAS UNIVERSAL EXAM & INTERVIEW PREP TERMINAL  📚         
+             🎯  ABHYAS INTERVIEW PREP CORE TERMINAL  🎯               
 ========================================================================
-Welcome, Jayesh! I am ABHYAS, your dedicated AI Prep Companion.
+Session cleared! MENTOR ADAPT ENGINE is still ACTIVE ✨
 
-I've been optimized to help you master any Exam, Test, Certification,
-or Interview directly without any complex dashboards. 
+I auto-sense your level from every message and reply accordingly:
+   🧒 Child  •  🌱 Beginner  •  📚 Intermediate  •  🔬 Expert
 
-📂 UPLOAD ANY DOCUMENT (PDF, TXT, Markdown, Notes, or Syllabus) using
-   the panel on the left, and I will analyze it instantly!
-
-Ask me anything based on the document, or try these prompts:
-  - "Create a mock test with multiple choice questions based on my notes"
-  - "Summarize the key formulas/concepts from this syllabus"
-  - "Ask me a technical question from chapter 3 and grade my answer"
-  - "Give me a mock interview behavioral question based on my resume"
+Ask me anything — Tech, Science, Math, History, or Interview Prep!
 ========================================================================
                         </div>
                     `;
@@ -1076,25 +1133,25 @@ Ask me anything based on the document, or try these prompts:
                 const loaderDiv = document.createElement('div');
                 loaderDiv.className = 'loader-line';
                 loaderDiv.id = 'abhyasLoader';
-                loaderDiv.innerHTML = `<span>⏳ ABHYAS is thinking...</span>`;
+                loaderDiv.innerHTML = `<span>⏳ ABHYAS sensing your level & thinking...</span>`;
                 terminalScreen.appendChild(loaderDiv);
                 terminalScreen.scrollTop = terminalScreen.scrollHeight;
 
                 const docContext = docContextArea.value.trim();
 
                 try {
-                    const userApiKey = localStorage.getItem('abhyas_user_api_key') || '';
+                    const userApiKey    = localStorage.getItem('abhyas_user_api_key') || '';
                     const openRouterKey = localStorage.getItem('abhyas_user_openrouter_key') || '';
+                    const groqKey       = localStorage.getItem('abhyas_user_groq_key') || '';
+                    const cerebrasKey   = localStorage.getItem('abhyas_user_cerebras_key') || '';
                     
                     const headers = { 
                         'Content-Type': 'application/json'
                     };
-                    if (userApiKey) {
-                        headers['x-api-key'] = userApiKey;
-                    }
-                    if (openRouterKey) {
-                        headers['x-openrouter-key'] = openRouterKey;
-                    }
+                    if (userApiKey)    headers['x-api-key']        = userApiKey;
+                    if (openRouterKey) headers['x-openrouter-key'] = openRouterKey;
+                    if (groqKey)       headers['x-groq-key']       = groqKey;
+                    if (cerebrasKey)   headers['x-cerebras-key']   = cerebrasKey;
 
                     const response = await fetch('/api/abhyas/chat', {
                         method: 'POST',
@@ -1115,10 +1172,19 @@ Ask me anything based on the document, or try these prompts:
                         throw new Error(data.error);
                     }
 
-                    // Display ABHYAS's response
+                    // Display ABHYAS's response with Mentor Adapt badge
                     const abhyasDiv = document.createElement('div');
                     abhyasDiv.className = 'abhyas-line';
-                    abhyasDiv.innerHTML = parseMarkdown(data.reply);
+
+                    // Build level badge
+                    const level  = data.level  || 'beginner';
+                    const domain = data.domain || 'general';
+                    const levelEmoji  = { child: '🧒', beginner: '🌱', intermediate: '📚', expert: '🔬' }[level]  || '💡';
+                    const domainEmoji = { tech: '💻', science: '🔭', math: '📐', history: '📜', interview: '🎯', general: '🌐' }[domain] || '💬';
+                    const levelLabel  = { child: 'Child Mode', beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert' }[level] || 'Beginner';
+
+                    const badgeHTML = `<div><span class="mentor-adapt-badge badge-${level}">${levelEmoji} ${levelLabel}</span><span class="domain-tag">${domainEmoji} ${domain}</span></div>`;
+                    abhyasDiv.innerHTML = badgeHTML + parseMarkdown(data.reply);
                     terminalScreen.appendChild(abhyasDiv);
                     terminalScreen.scrollTop = terminalScreen.scrollHeight;
 
@@ -1333,32 +1399,54 @@ Ask me anything based on the document, or try these prompts:
         const apiKeyModal = document.getElementById('apiKeyModal');
         const userApiKeyInput = document.getElementById('userApiKeyInput');
         const openRouterKeyInput = document.getElementById('openRouterKeyInput');
+        const groqKeyInput = document.getElementById('groqKeyInput');
+        const cerebrasKeyInput = document.getElementById('cerebrasKeyInput');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
         const btnClearKey = document.getElementById('btnClearKey');
 
         function openApiKeyModal() {
-            const currentKey = localStorage.getItem('abhyas_user_api_key') || '';
+            const currentGemini     = localStorage.getItem('abhyas_user_api_key') || '';
             const currentOpenRouter = localStorage.getItem('abhyas_user_openrouter_key') || '';
-            userApiKeyInput.value = currentKey;
+            const currentGroq       = localStorage.getItem('abhyas_user_groq_key') || '';
+            const currentCerebras   = localStorage.getItem('abhyas_user_cerebras_key') || '';
+
+            userApiKeyInput.value    = currentGemini;
             openRouterKeyInput.value = currentOpenRouter;
-            
-            userApiKeyInput.type = 'password';
-            openRouterKeyInput.type = 'password';
-            document.getElementById('btnToggleGeminiVisibility').textContent = '👁️';
-            document.getElementById('btnToggleOpenRouterVisibility').textContent = '👁️';
-            
-            // Show/hide Clear button in modal if either key exists
-            if (currentKey || currentOpenRouter) {
-                btnClearKey.style.display = 'block';
-            } else {
-                btnClearKey.style.display = 'none';
-            }
-            
+            groqKeyInput.value       = currentGroq;
+            cerebrasKeyInput.value   = currentCerebras;
+
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.type = 'password');
+            ['btnToggleGeminiVisibility','btnToggleOpenRouterVisibility','btnToggleGroqVisibility','btnToggleCerebrasVisibility']
+                .forEach(id => document.getElementById(id).textContent = '👁️');
+
+            btnClearKey.style.display = (currentGemini || currentOpenRouter || currentGroq || currentCerebras) ? 'block' : 'none';
             apiKeyModal.showModal();
         }
 
         function closeApiKeyModal() {
             apiKeyModal.close();
+        }
+
+        function toggleGroqVisibility() {
+            const btn = document.getElementById('btnToggleGroqVisibility');
+            if (groqKeyInput.type === 'password') {
+                groqKeyInput.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                groqKeyInput.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function toggleCerebrasVisibility() {
+            const btn = document.getElementById('btnToggleCerebrasVisibility');
+            if (cerebrasKeyInput.type === 'password') {
+                cerebrasKeyInput.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                cerebrasKeyInput.type = 'password';
+                btn.textContent = '👁️';
+            }
         }
 
         function toggleKeyVisibility() {
@@ -1384,73 +1472,68 @@ Ask me anything based on the document, or try these prompts:
         }
 
         function saveApiKey() {
-            const rawGemini = userApiKeyInput.value.trim();
+            const rawGemini     = userApiKeyInput.value.trim();
             const rawOpenRouter = openRouterKeyInput.value.trim();
+            const rawGroq       = groqKeyInput.value.trim();
+            const rawCerebras   = cerebrasKeyInput.value.trim();
 
-            if (!rawGemini && !rawOpenRouter) {
-                alert("Please enter at least one active API key (Gemini or OpenRouter), or click 'Clear All' to reset.");
+            if (!rawGemini && !rawOpenRouter && !rawGroq && !rawCerebras) {
+                alert("Please enter at least one API key, or click 'Clear All' to reset.");
                 return;
             }
 
-            let logMessage = "[SYSTEM]: ";
-
-            if (rawGemini) {
-                localStorage.setItem('abhyas_user_api_key', rawGemini);
-                logMessage += "Gemini API Key active. ";
-            } else {
-                localStorage.removeItem('abhyas_user_api_key');
-            }
-
-            if (rawOpenRouter) {
-                localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter);
-                logMessage += "OpenRouter cloud fallback active.";
-            } else {
-                localStorage.removeItem('abhyas_user_openrouter_key');
-            }
+            const parts = [];
+            rawGroq       ? (localStorage.setItem('abhyas_user_groq_key', rawGroq),       parts.push('⚡ Groq'))       : localStorage.removeItem('abhyas_user_groq_key');
+            rawGemini     ? (localStorage.setItem('abhyas_user_api_key', rawGemini),       parts.push('✨ Gemini'))     : localStorage.removeItem('abhyas_user_api_key');
+            rawCerebras   ? (localStorage.setItem('abhyas_user_cerebras_key', rawCerebras),parts.push('🧠 Cerebras'))  : localStorage.removeItem('abhyas_user_cerebras_key');
+            rawOpenRouter ? (localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter), parts.push('🌐 OpenRouter')) : localStorage.removeItem('abhyas_user_openrouter_key');
 
             updateApiKeyBtnState();
             closeApiKeyModal();
 
-            // Print system notification in terminal
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--success)';
-            notifyDiv.innerHTML = logMessage;
+            notifyDiv.innerHTML = `[SYSTEM]: Active providers: ${parts.join(', ')}. ABHYAS will auto-route for max speed & uptime!`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
         function clearApiKey() {
-            localStorage.removeItem('abhyas_user_api_key');
-            localStorage.removeItem('abhyas_user_openrouter_key');
-            userApiKeyInput.value = '';
-            openRouterKeyInput.value = '';
+            ['abhyas_user_api_key','abhyas_user_openrouter_key','abhyas_user_groq_key','abhyas_user_cerebras_key']
+                .forEach(k => localStorage.removeItem(k));
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.value = '');
             
             updateApiKeyBtnState();
             closeApiKeyModal();
 
-            // Print system notification in terminal
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--accent-secondary)';
-            notifyDiv.innerHTML = `[SYSTEM]: All custom credentials removed. Reverting to server default credentials or simulated Hinglish dialogues.`;
+            notifyDiv.innerHTML = `[SYSTEM]: All credentials cleared. Add a Groq key (free, fastest) to get started!`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
         function updateApiKeyBtnState() {
-            const hasGemini = !!localStorage.getItem('abhyas_user_api_key');
+            const hasGroq       = !!localStorage.getItem('abhyas_user_groq_key');
+            const hasGemini     = !!localStorage.getItem('abhyas_user_api_key');
+            const hasCerebras   = !!localStorage.getItem('abhyas_user_cerebras_key');
             const hasOpenRouter = !!localStorage.getItem('abhyas_user_openrouter_key');
-            
-            if (hasGemini && hasOpenRouter) {
+            const count = [hasGroq, hasGemini, hasCerebras, hasOpenRouter].filter(Boolean).length;
+
+            if (count >= 2) {
                 apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Keys Active</span>`;
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">${count} Providers Active</span>`;
+            } else if (hasGroq) {
+                apiKeyBtn.classList.add('has-key');
+                apiKeyBtn.innerHTML = `⚡ <span class="btn-text">Groq Active</span>`;
             } else if (hasGemini) {
                 apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Gemini Active</span>`;
-            } else if (hasOpenRouter) {
+                apiKeyBtn.innerHTML = `✨ <span class="btn-text">Gemini Active</span>`;
+            } else if (hasCerebras || hasOpenRouter) {
                 apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Cloud Fallback</span>`;
+                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Cloud Active</span>`;
             } else {
                 apiKeyBtn.classList.remove('has-key');
                 apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Set API Keys</span>`;
