@@ -777,6 +777,359 @@
             background: #674ee3;
             transform: translateY(-1px);
         }
+
+        /* ── NEW INTERACTIVE UI ELEMENTS ── */
+        /* Blinking Terminal Caret */
+        .stream-caret {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--accent-primary);
+            animation: blink 0.8s infinite;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Stop Generation Button */
+        .btn-stop {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--danger);
+            background: rgba(217, 120, 120, 0.08);
+            border: 1px solid rgba(217, 120, 120, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .btn-stop:hover {
+            background: rgba(217, 120, 120, 0.15);
+            border-color: var(--danger);
+            transform: translateY(-1px);
+        }
+
+        /* Text to Speech Button */
+        .btn-speak {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--terminal-text);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+        .btn-speak:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-primary);
+            color: #ffffff;
+        }
+
+        /* Interactive Code Block Container */
+        .code-block-wrapper {
+            position: relative;
+            margin: 12px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .code-block-header {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .code-block-wrapper:hover .code-block-header {
+            opacity: 1;
+        }
+        .btn-code-action {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #eae9fc;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+        .btn-code-action:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+        .btn-explain-code {
+            background: rgba(138, 118, 233, 0.15);
+            border: 1px solid rgba(138, 118, 233, 0.3);
+            color: #aba1f2;
+        }
+        .btn-explain-code:hover {
+            background: rgba(138, 118, 233, 0.25);
+            border-color: var(--accent-primary);
+            color: #ffffff;
+        }
+
+        /* Chips Follow up container */
+        .chips-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            margin-bottom: 4px;
+            animation: fadeIn 0.4s ease;
+        }
+        .suggested-chip {
+            background: rgba(138, 118, 233, 0.06);
+            border: 1px solid rgba(138, 118, 233, 0.2);
+            color: var(--accent-primary);
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s ease;
+        }
+        .suggested-chip:hover {
+            background: rgba(138, 118, 233, 0.12);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glowing Assistant Voice Wave Visualizer */
+        .voice-wave-container {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0;
+            background: rgba(138, 118, 233, 0.05);
+            border: 1px solid rgba(138, 118, 233, 0.15);
+            padding: 10px 20px;
+            border-radius: 12px;
+            width: fit-content;
+            box-shadow: 0 4px 15px rgba(138, 118, 233, 0.08);
+            animation: fadeIn 0.3s ease;
+        }
+        .voice-status {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .wave-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 20px;
+        }
+        .wave-bar {
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(to top, var(--accent-primary), var(--accent-secondary));
+            border-radius: 20px;
+            animation: bounceBar 0.8s ease-in-out infinite alternate;
+        }
+        .wave-bar:nth-child(2) { animation-duration: 0.5s; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-duration: 0.9s; animation-delay: 0.2s; background: var(--accent-secondary); }
+        .wave-bar:nth-child(4) { animation-duration: 0.6s; animation-delay: 0.35s; }
+        .wave-bar:nth-child(5) { animation-duration: 0.7s; animation-delay: 0.5s; background: var(--accent-secondary); }
+        .wave-bar:nth-child(6) { animation-duration: 0.4s; animation-delay: 0.15s; }
+        .wave-bar:nth-child(7) { animation-duration: 0.8s; animation-delay: 0.3s; }
+        
+        @keyframes bounceBar {
+            0% { height: 3px; }
+            100% { height: 20px; }
+        }
+
+        /* 🎙️ High-End Glassmorphism Dialog Style */
+        .glass-modal {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 252, 0.75); /* Frosted cream theme */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 440px;
+            width: 90%;
+            margin: auto;
+            color: var(--text-main);
+            box-shadow: 0 30px 70px rgba(61, 59, 56, 0.2), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            overflow: hidden;
+            animation: glassModalReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .glass-modal::backdrop {
+            background: rgba(26, 25, 29, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            animation: backdropFadeIn 0.3s ease forwards;
+        }
+
+        @keyframes glassModalReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes backdropFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .glass-modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .glass-modal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .glass-modal-icon {
+            font-size: 42px;
+            line-height: 1;
+            filter: drop-shadow(0 4px 10px rgba(138, 118, 233, 0.35));
+            animation: iconPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.05); }
+        }
+
+        .glass-modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        .glass-modal-desc {
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .glass-modal-hint {
+            background: rgba(138, 118, 233, 0.05);
+            border: 1px solid rgba(138, 118, 233, 0.15);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--accent-primary);
+            line-height: 1.4;
+            max-width: 90%;
+        }
+
+        .glass-modal-actions {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-glass-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12.5px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            border: none;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-glass-yes {
+            background: linear-gradient(135deg, var(--accent-primary), #755ee8);
+            color: white;
+            box-shadow: 0 8px 24px rgba(138, 118, 233, 0.3);
+        }
+
+        .btn-glass-yes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(138, 118, 233, 0.45);
+            filter: brightness(1.05);
+        }
+
+        .btn-glass-yes:active {
+            transform: translateY(0);
+        }
+
+        .btn-glass-no {
+            background: rgba(61, 59, 56, 0.06);
+            color: var(--text-main);
+            border: 1px solid rgba(61, 59, 56, 0.1);
+        }
+
+        .btn-glass-no:hover {
+            background: rgba(61, 59, 56, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-glass-no:active {
+            transform: translateY(0);
+        }
+
+        /* Smooth Dialog Wizard Step Transition */
+        .glass-modal-content.fade-out {
+            animation: glassFadeOut 0.25s ease forwards;
+        }
+
+        .glass-modal-content.fade-in {
+            animation: glassFadeIn 0.3s ease forwards;
+        }
+
+        @keyframes glassFadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.95); }
+        }
+
+        @keyframes glassFadeIn {
+            from { opacity: 0; transform: scale(1.05); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -857,9 +1210,65 @@ Example prompts:
             <div class="terminal-input-bar">
                 <div class="input-prompt">abhyas@prep %</div>
                 <input type="text" class="terminal-input" id="terminalInput" placeholder="Type prompt or query and press Enter..." autocomplete="off" autofocus>
+                <button id="stopGenerationBtn" class="btn-stop" onclick="stopStreaming()">
+                    ⏹ <span class="btn-text">Stop</span>
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- 🎙️ STARTUP AUTO-SPEAK & LANGUAGE POPUP (Glassmorphism design) -->
+    <dialog id="startupSpeakModal" class="glass-modal" aria-labelledby="startupSpeakTitle">
+        <!-- STEP 1: AUTO-SPEAK CONFIG -->
+        <div id="startupStep1" class="glass-modal-content">
+            <div class="glass-modal-header">
+                <div class="glass-modal-icon">🎙️</div>
+                <h3 id="startupSpeakTitle" class="glass-modal-title">Voice Configuration</h3>
+            </div>
+            <p class="glass-modal-desc">
+                Would you like **ABHYAS** to automatically speak out every response as it generates in real-time?
+            </p>
+            <div class="glass-modal-hint">
+                💡 Hinglish speech will be synthesized using your active ElevenLabs or local voice settings.
+            </div>
+            <div class="glass-modal-actions">
+                <button class="btn-glass-action btn-glass-yes" onclick="goToStep2(true)">
+                    🔊 Yes, Auto-Speak Responses
+                </button>
+                <button class="btn-glass-action btn-glass-no" onclick="goToStep2(false)">
+                    🔇 No, Speak Only on Click
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: LANGUAGE CONFIG -->
+        <div id="startupStep2" class="glass-modal-content" style="display: none;">
+            <div class="glass-modal-header">
+                <div class="glass-modal-icon">🌐</div>
+                <h3 class="glass-modal-title">Primary Language</h3>
+            </div>
+            <p class="glass-modal-desc">
+                What is your primary language? The **entire conversation** will be conducted in this language.
+            </p>
+            <div class="glass-modal-hint" style="max-height: 48px; overflow: hidden;">
+                💡 Choose standard styles, or type any custom language of your choice below!
+            </div>
+            <div class="glass-modal-actions" style="margin-top: 4px;">
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <button class="btn-glass-action btn-glass-yes" style="padding: 10px 12px; font-size: 13px;" onclick="setStartupLanguage('hinglish')">🇮🇳 Hinglish</button>
+                    <button class="btn-glass-action btn-glass-no" style="padding: 10px 12px; font-size: 13px; background: rgba(138, 118, 233, 0.08); color: var(--accent-primary); border: 1px solid rgba(138, 118, 233, 0.25);" onclick="setStartupLanguage('english')">🇬🇧 English</button>
+                    <button class="btn-glass-action btn-glass-no" style="padding: 10px 12px; font-size: 13px; background: rgba(61, 59, 56, 0.06); color: var(--text-main); border: 1px solid rgba(61, 59, 56, 0.1);" onclick="setStartupLanguage('hindi')">🇮🇳 Hindi</button>
+                </div>
+                
+                <button class="btn-glass-action btn-glass-no" id="btnStartupOtherLang" style="padding: 10px; font-size: 13px; margin-top: 4px;" onclick="showStartupOtherLanguageInput()">✍️ Custom / Other Language...</button>
+                
+                <div id="startupOtherLangGroup" style="display: none; width: 100%; margin-top: 6px; flex-direction: column; gap: 6px;">
+                    <input type="text" id="startupOtherLangInput" class="key-input" placeholder="Enter language (e.g. Tamil, Spanish, French)" style="font-size: 12.5px; border-radius: 8px; padding: 8px 12px;" autocomplete="off">
+                    <button class="btn-glass-action btn-glass-yes" style="padding: 8px; font-size: 12.5px;" onclick="submitStartupCustomLanguage()">Confirm Language</button>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Gemini API Key Modal -->
     <dialog id="apiKeyModal" class="api-key-dialog">
@@ -916,6 +1325,85 @@ Example prompts:
             </div>
             <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
                 11+ free models. Used only when all other providers fail. Free at <strong>openrouter.ai</strong>.
+            </div>
+        </div>
+        <!-- 🎙️ PREMIUM NATURAL VOICES (Optional Cloud Upgrade) -->
+        <div style="border-top: 1px dashed var(--border-color); margin-top: 16px; padding-top: 12px; font-weight: 700; font-size: 13px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
+            🎙️ Premium Voice Credentials (Optional)
+        </div>
+
+        <!-- OPENAI API Key (for lifelike voices) -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="openaiKeyInput">🗣️ OpenAI API Key <span style="color:var(--text-muted);font-size:10px;">[Hyper-realistic Speech]</span></label>
+            <div class="input-wrapper">
+                <input type="password" id="openaiKeyInput" class="key-input" placeholder="sk-proj-..." autocomplete="off">
+                <button type="button" class="btn-toggle-visibility" id="btnToggleOpenAIVisibility" onclick="toggleOpenAIVisibility()" title="Toggle Visibility">👁️</button>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                Required for OpenAI's human-level vocal models.
+            </div>
+        </div>
+
+        <!-- ELEVENLABS API Key -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="elevenKeyInput">👤 ElevenLabs API Key <span style="color:var(--text-muted);font-size:10px;">[State-of-the-Art Clone Voices]</span></label>
+            <div class="input-wrapper">
+                <input type="password" id="elevenKeyInput" class="key-input" placeholder="eleven_..." autocomplete="off">
+                <button type="button" class="btn-toggle-visibility" id="btnToggleElevenVisibility" onclick="toggleElevenVisibility()" title="Toggle Visibility">👁️</button>
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                Binds to ElevenLabs' lifelike speech synthesis. Get key at <strong>elevenlabs.io</strong>.
+            </div>
+        </div>
+
+        <!-- Active TTS Selection -->
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label class="input-label" for="ttsProviderSelect">Active Voice Engine</label>
+                <select id="ttsProviderSelect" class="key-input" style="padding: 8px 12px; font-family: inherit; font-size: 12.5px; border-radius: 8px; appearance: auto;" onchange="updateVoiceDropdown()">
+                    <option value="local">Local NLP Engine (Free/Offline)</option>
+                    <option value="openai">OpenAI Cloud TTS</option>
+                    <option value="elevenlabs">ElevenLabs Cloud TTS</option>
+                </select>
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <label class="input-label" for="ttsVoiceSelect">Select Voice Model</label>
+                <select id="ttsVoiceSelect" class="key-input" style="padding: 8px 12px; font-family: inherit; font-size: 12.5px; border-radius: 8px; appearance: auto;" onchange="handleVoiceSelectChange()">
+                    <!-- Dynamically populated -->
+                </select>
+            </div>
+        </div>
+
+        <!-- Custom Voice ID Input Group (Hidden by default) -->
+        <div id="ttsCustomVoiceInputGroup" class="input-group" style="margin-top: 8px; display: none;">
+            <label class="input-label" for="ttsCustomVoiceInput">✍️ Paste Custom Voice ID</label>
+            <div class="input-wrapper">
+                <input type="text" id="ttsCustomVoiceInput" class="key-input" placeholder="e.g. Rudra voice_id" autocomplete="off">
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                Required if API key lacks permissions. Paste the ID of your ElevenLabs voice here.
+            </div>
+        </div>
+
+        <!-- Language Preference Selector -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="ttsLanguageSelect">Language Model Response Style</label>
+            <select id="ttsLanguageSelect" class="key-input" style="padding: 8px 12px; font-family: inherit; font-size: 12.5px; border-radius: 8px; appearance: auto;" onchange="handleLanguageSelectChange()">
+                <option value="hinglish">🇮🇳 Hinglish (Hindi + English mix)</option>
+                <option value="english">🇬🇧 Pure English</option>
+                <option value="hindi">🇮🇳 Pure Hindi</option>
+                <option value="custom">✍️ Custom / Other Language...</option>
+            </select>
+        </div>
+
+        <!-- Custom Language Input Group (Hidden by default) -->
+        <div id="ttsCustomLanguageInputGroup" class="input-group" style="margin-top: 8px; display: none;">
+            <label class="input-label" for="ttsCustomLanguageInput">✍️ Enter Custom Language</label>
+            <div class="input-wrapper">
+                <input type="text" id="ttsCustomLanguageInput" class="key-input" placeholder="e.g. Tamil, Spanish, French" autocomplete="off">
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                ABHYAS will conduct the entire coaching session in this language.
             </div>
         </div>
 
@@ -1051,45 +1539,373 @@ Example prompts:
         // ---------------------------------------------------------------------
         // Markdown parser
         // ---------------------------------------------------------------------
+        let activeController = null;
+        let activeSpeechButton = null;
+        let speechQueue = [];
+        let speechIndex = 0;
+        let speechTimeout = null;
+        let activeAudio = null;
+        let activeWaveElement = null;
+
+        function stopStreaming() {
+            if (activeController) {
+                activeController.abort();
+                activeController = null;
+                console.log("⏹ Stream generation aborted by user.");
+            }
+            const stopBtn = document.getElementById('stopGenerationBtn');
+            if (stopBtn) stopBtn.style.display = 'none';
+        }
+
+        function stopSpeech() {
+            if (speechTimeout) {
+                clearTimeout(speechTimeout);
+                speechTimeout = null;
+            }
+            window.speechSynthesis.cancel();
+            speechQueue = [];
+            speechIndex = 0;
+
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio = null;
+            }
+
+            if (activeWaveElement) {
+                activeWaveElement.style.display = 'none';
+                activeWaveElement = null;
+            }
+            
+            if (activeSpeechButton) {
+                activeSpeechButton.innerHTML = '🔊 Speak';
+                activeSpeechButton.style.color = '';
+                activeSpeechButton.style.borderColor = '';
+                activeSpeechButton = null;
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // Interactive Helpers
+        // ---------------------------------------------------------------------
+        function copyCodeText(button) {
+            const wrapper = button.closest('.code-block-wrapper');
+            const codeEl = wrapper.querySelector('code');
+            if (!codeEl) return;
+
+            navigator.clipboard.writeText(codeEl.textContent).then(() => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '✔ Copied!';
+                button.style.color = 'var(--success)';
+                button.style.borderColor = 'var(--success)';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.color = '';
+                    button.style.borderColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        function explainCodeText(button) {
+            const wrapper = button.closest('.code-block-wrapper');
+            const codeEl = wrapper.querySelector('code');
+            if (!codeEl) return;
+
+            const codeText = codeEl.textContent.trim();
+            terminalInput.value = `Explain this code simply:\n\n\`\`\`\n${codeText}\n\`\`\``;
+            terminalInput.focus();
+            
+            // Trigger Enter
+            const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+            terminalInput.dispatchEvent(enterEvent);
+        }
+
+        async function speakResponse(button, htmlContent) {
+            // Toggle stop if already speaking
+            if (activeSpeechButton === button) {
+                stopSpeech();
+                return;
+            }
+
+            // Stop any active speech first
+            stopSpeech();
+
+            activeSpeechButton = button;
+            button.innerHTML = '⏹ Stop';
+            button.style.color = 'var(--danger)';
+            button.style.borderColor = 'var(--danger)';
+
+            // Locate and display the visual wave
+            const responseLine = button.closest('.abhyas-line');
+            const waveEl = responseLine ? responseLine.querySelector('.voice-wave-container') : null;
+            if (waveEl) {
+                activeWaveElement = waveEl;
+                waveEl.style.display = 'flex';
+            }
+
+            // Extract plain text from HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            // Strip out code blocks entirely for readable TTS
+            tempDiv.querySelectorAll('.code-block-wrapper').forEach(el => el.remove());
+            
+            let rawText = tempDiv.innerText || tempDiv.textContent || '';
+            // Remove footers and extra brackets
+            rawText = rawText.split('[Hint:')[0].trim();
+
+            if (!rawText) {
+                stopSpeech();
+                return;
+            }
+
+            // Check keys and preferences
+            const openaiKey = localStorage.getItem('abhyas_user_openai_key') || '';
+            const elevenKey = localStorage.getItem('abhyas_user_eleven_key') || '';
+            const provider  = localStorage.getItem('abhyas_tts_provider') || 'elevenlabs';
+            const voice     = localStorage.getItem('abhyas_tts_voice') || '21m00Tcm4TlvDq8ikWAM';
+
+            const isCloudOpenAI = (provider === 'openai');
+            const isCloudEleven = (provider === 'elevenlabs');
+
+            if (isCloudOpenAI || isCloudEleven) {
+                try {
+                    console.log(`🎙️ Sending request to backend TTS proxy using ${provider}...`);
+                    const response = await fetch('/api/abhyas/tts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-openai-key': openaiKey,
+                            'x-eleven-key': elevenKey
+                        },
+                        body: JSON.stringify({
+                            text: rawText,
+                            provider: provider,
+                            voice: voice
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || "Failed to synthesize premium cloud voice.");
+                    }
+
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    const audio = new Audio(audioUrl);
+                    activeAudio = audio;
+                    
+                    audio.onended = () => {
+                        stopSpeech();
+                    };
+
+                    audio.onerror = (e) => {
+                        console.error("Audio playback error:", e);
+                        fallbackToLocalNLP(rawText);
+                    };
+
+                    await audio.play();
+
+                } catch (err) {
+                    console.warn("⚠️ Cloud TTS synthesis failed. Safe falling back to local NLP engine: ", err.message);
+                    
+                    const notify = document.createElement('div');
+                    notify.className = 'abhyas-line';
+                    notify.style.color = 'var(--danger)';
+                    notify.innerHTML = `[SYSTEM WARNING]: Premium Cloud voice failed (${err.message}). Safe-falling back to local NLP speech synthesizer...`;
+                    terminalScreen.appendChild(notify);
+                    terminalScreen.scrollTop = terminalScreen.scrollHeight;
+                    
+                    fallbackToLocalNLP(rawText);
+                }
+            } else {
+                if (provider !== 'local') {
+                    const notify = document.createElement('div');
+                    notify.className = 'abhyas-line';
+                    notify.style.color = 'var(--accent-secondary)';
+                    notify.innerHTML = `[SYSTEM HINT]: Configure an OpenAI or ElevenLabs key in settings 🔑 for a 100% human-realistic voice! Safe-falling back to local NLP voice...`;
+                    terminalScreen.appendChild(notify);
+                    terminalScreen.scrollTop = terminalScreen.scrollHeight;
+                }
+                
+                fallbackToLocalNLP(rawText);
+            }
+        }
+
+        function fallbackToLocalNLP(rawText) {
+            // Normalization (NLP Spoken Translation)
+            let cleanText = rawText
+                .replace(/\*\*|__|\*|_|`/g, '') // remove markdown
+                .replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '') // remove emojis
+                .replace(/\bLLM\b/g, 'L. L. M.')
+                .replace(/\bLLMs\b/g, 'L. L. M.s')
+                .replace(/\bML\b/g, 'M. L.')
+                .replace(/\bDSA\b/g, 'D. S. A.')
+                .replace(/\bAPI\b/g, 'A. P. I.')
+                .replace(/\bAPIs\b/g, 'A. P. I.s')
+                .replace(/\bJSON\b/g, 'Jay-son')
+                .replace(/\bJD\b/g, 'J. D.')
+                .replace(/\bJDs\b/g, 'J. D.s')
+                .replace(/\bCV\b/g, 'C. V.')
+                .replace(/\bUI\b/g, 'U. I.')
+                .replace(/\bUX\b/g, 'U. X.')
+                .replace(/\bSQL\b/g, 'Sequel')
+                .replace(/\bREST\b/g, 'rest')
+                .replace(/\bHTTP\b/g, 'H. T. T. P.')
+                .replace(/\bHTTPS\b/g, 'H. T. T. P. S.')
+                .replace(/\bSTAR\b/g, 'star')
+                .replace(/\bOOP\b/g, 'O. O. P.')
+                .replace(/\bOOPs\b/g, 'O. O. P.s');
+
+            const rawSlices = cleanText.split(/(?<=[.?!,;:—])\s+/);
+            
+            speechQueue = rawSlices
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            if (speechQueue.length === 0) {
+                stopSpeech();
+                return;
+            }
+
+            speechIndex = 0;
+            speakNextSlice();
+        }
+
+        function speakNextSlice() {
+            if (speechIndex >= speechQueue.length) {
+                stopSpeech();
+                return;
+            }
+
+            const sliceText = speechQueue[speechIndex];
+            
+            const utterance = new SpeechSynthesisUtterance(sliceText);
+            utterance.rate = 0.93;
+            utterance.pitch = 1.02;
+
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => 
+                v.name.includes('Premium') || 
+                v.name.includes('Neural') || 
+                v.name.includes('Google US English') ||
+                v.lang.includes('en-IN') || 
+                v.lang.includes('en-US')
+            ) || voices[0];
+            
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            utterance.onend = () => {
+                const lastChar = sliceText.slice(-1);
+                let pauseMs = 380;
+
+                if (['.', '?', '!'].includes(lastChar)) {
+                    pauseMs = 500;
+                } else if ([',', ';', ':', '—'].includes(lastChar)) {
+                    pauseMs = 200;
+                }
+
+                speechIndex++;
+                speechTimeout = setTimeout(() => {
+                    speakNextSlice();
+                }, pauseMs);
+            };
+
+            utterance.onerror = (err) => {
+                console.error("Speech Synthesis Error:", err);
+                stopSpeech();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function renderFollowUpChips(container, level, domain) {
+            const chipsContainer = document.createElement('div');
+            chipsContainer.className = 'chips-container';
+
+            let suggestions = [];
+            if (domain === 'interview') {
+                suggestions = [
+                    { text: '🎯 Give Mock Question', query: 'Give me a mock interview question on this topic!' },
+                    { text: '🔧 How to Improve?', query: 'How can I improve this response to score 10/10 in a real interview?' },
+                    { text: '💡 STAR Method structure', query: 'Can you show me how to structure this answer using the STAR method?' }
+                ];
+            } else if (domain === 'tech') {
+                suggestions = [
+                    { text: '💻 Code Example', query: 'Show me a detailed, well-commented code example for this.' },
+                    { text: '⚡ Complexity analysis', query: 'Explain the Time and Space complexity (Big-O) under the hood.' },
+                    { text: '🔍 Technical Deep-dive', query: 'expand' }
+                ];
+            } else {
+                suggestions = [
+                    { text: '🔍 Explain more', query: 'expand' },
+                    { text: '💡 Real-world Analogy', query: 'Give me another simple real-world analogy to understand this better.' },
+                    { text: '📝 Quick Quiz!', query: 'Give me a multiple-choice question to test my understanding of this!' }
+                ];
+            }
+
+            suggestions.forEach(s => {
+                const chip = document.createElement('button');
+                chip.className = 'suggested-chip';
+                chip.textContent = s.text;
+                chip.onclick = () => {
+                    terminalInput.value = s.query;
+                    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                    terminalInput.dispatchEvent(enterEvent);
+                };
+                chipsContainer.appendChild(chip);
+            });
+
+            container.appendChild(chipsContainer);
+        }
+
+        // ---------------------------------------------------------------------
+        // Markdown parser
+        // ---------------------------------------------------------------------
         function parseMarkdown(text) {
             let html = text
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;");
 
-            // 1. Score Block Replacement (Highlight ABHYAS SCORE: X/10)
             html = html.replace(/\[ABHYAS SCORE: (.*?)\]/gi, '<div style="background: rgba(107, 179, 145, 0.15); border: 1px solid var(--success); padding: 14px 20px; border-radius: 8px; font-weight: 700; color: var(--success); margin: 16px 0; font-size: 15.5px; font-family: \'Outfit\', sans-serif; display: flex; align-items: center; gap: 8px; width: fit-content;">🎯 <span style="letter-spacing: 0.5px;">ABHYAS READINESS SCORE:</span> <span style="font-size: 18px; color: #ffffff; background: var(--success); padding: 2px 10px; border-radius: 6px; font-family: \'Outfit\', sans-serif;">$1</span></div>');
             html = html.replace(/\[VANI SCORE: (.*?)\]/gi, '<div style="background: rgba(107, 179, 145, 0.15); border: 1px solid var(--success); padding: 14px 20px; border-radius: 8px; font-weight: 700; color: var(--success); margin: 16px 0; font-size: 15.5px; font-family: \'Outfit\', sans-serif; display: flex; align-items: center; gap: 8px; width: fit-content;">🎯 <span style="letter-spacing: 0.5px;">ABHYAS READINESS SCORE:</span> <span style="font-size: 18px; color: #ffffff; background: var(--success); padding: 2px 10px; border-radius: 6px; font-family: \'Outfit\', sans-serif;">$1</span></div>');
 
-            // 2. Bold Text **text**
-            html = html.replace(/\*\|(.*?)\*\*/g, '<strong>$1</strong>'); // Safeguard
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // 3. Inline Code `code`
-            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-
-            // 4. Code Blocks ```code```
-            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-
-            // 5. Blockquotes (lines starting with >)
-            html = html.replace(/^&gt; (.*?)$/gm, '<blockquote style="border-left: 3px solid var(--accent-primary); padding-left: 12px; margin: 10px 0; color: var(--text-muted); font-style: italic;">$1</blockquote>');
-
-            // 6. Checkbox lists [ ] and [x]
-            html = html.replace(/\[ \]/g, '<input type="checkbox" disabled style="margin-right: 8px; accent-color: var(--accent-primary);">');
-            html = html.replace(/\[x\]/gi, '<input type="checkbox" checked disabled style="margin-right: 8px; accent-color: var(--accent-primary);">');
-
-            // 7. Bullet lists (* or -)
-            html = html.replace(/^\s*[\*\-]\s+(.*?)$/gm, '<li style="margin-left: 20px; list-style-type: disc; margin-top: 4px; margin-bottom: 4px;">$1</li>');
-
-            // 8. Numbered lists (digits + .)
-            html = html.replace(/^\s*(\d+)\.\s+(.*?)$/gm, '<li style="margin-left: 20px; list-style-type: decimal; margin-top: 4px; margin-bottom: 4px;">$2</li>');
-
-            // 9. Headings (#, ##, ###)
-            html = html.replace(/^# (.*?)$/gm, '<h2 style="color: var(--accent-primary); margin-top: 18px; margin-bottom: 8px; font-size: 18px; font-family: \'Outfit\', sans-serif;">$1</h2>');
-            html = html.replace(/^## (.*?)$/gm, '<h3 style="color: var(--accent-secondary); margin-top: 14px; margin-bottom: 6px; font-size: 16px; font-family: \'Outfit\', sans-serif;">$1</h3>');
-            html = html.replace(/^### (.*?)$/gm, '<h4 style="color: var(--success); margin-top: 10px; margin-bottom: 4px; font-size: 14.5px; font-family: \'Outfit\', sans-serif;">$1</h4>');
-
-            return html;
+            const parts = html.split('```');
+            let parsedText = '';
+            for (let i = 0; i < parts.length; i++) {
+                if (i % 2 === 1) {
+                    const codeContent = parts[i];
+                    parsedText += `
+                        <div class="code-block-wrapper">
+                            <div class="code-block-header">
+                                <button class="btn-code-action btn-copy-code" onclick="copyCodeText(this)">📋 Copy</button>
+                                <button class="btn-code-action btn-explain-code" onclick="explainCodeText(this)">🧠 Explain</button>
+                            </div>
+                            <pre><code>${codeContent}</code></pre>
+                        </div>
+                    `;
+                } else {
+                    let partHtml = parts[i];
+                    partHtml = partHtml.replace(/\*\|(.*?)\*\*/g, '<strong>$1</strong>');
+                    partHtml = partHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    partHtml = partHtml.replace(/`(.*?)`/g, '<code>$1</code>');
+                    partHtml = partHtml.replace(/^&gt; (.*?)$/gm, '<blockquote style="border-left: 3px solid var(--accent-primary); padding-left: 12px; margin: 10px 0; color: var(--text-muted); font-style: italic;">$1</blockquote>');
+                    partHtml = partHtml.replace(/\[ \]/g, '<input type="checkbox" disabled style="margin-right: 8px; accent-color: var(--accent-primary);">');
+                    partHtml = partHtml.replace(/\[x\]/gi, '<input type="checkbox" checked disabled style="margin-right: 8px; accent-color: var(--accent-primary);">');
+                    partHtml = partHtml.replace(/^\s*[\*\-]\s+(.*?)$/gm, '<li style="margin-left: 20px; list-style-type: disc; margin-top: 4px; margin-bottom: 4px;">$1</li>');
+                    partHtml = partHtml.replace(/^\s*(\d+)\.\s+(.*?)$/gm, '<li style="margin-left: 20px; list-style-type: decimal; margin-top: 4px; margin-bottom: 4px;">$2</li>');
+                    partHtml = partHtml.replace(/^# (.*?)$/gm, '<h2 style="color: var(--accent-primary); margin-top: 18px; margin-bottom: 8px; font-size: 18px; font-family: \'Outfit\', sans-serif;">$1</h2>');
+                    partHtml = partHtml.replace(/^## (.*?)$/gm, '<h3 style="color: var(--accent-secondary); margin-top: 14px; margin-bottom: 6px; font-size: 16px; font-family: \'Outfit\', sans-serif;">$1</h3>');
+                    partHtml = partHtml.replace(/^### (.*?)$/gm, '<h4 style="color: var(--success); margin-top: 10px; margin-bottom: 4px; font-size: 14.5px; font-family: \'Outfit\', sans-serif;">$1</h4>');
+                    parsedText += partHtml;
+                }
+            }
+            return parsedText;
         }
 
         // ---------------------------------------------------------------------
@@ -1153,44 +1969,119 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                     if (groqKey)       headers['x-groq-key']       = groqKey;
                     if (cerebrasKey)   headers['x-cerebras-key']   = cerebrasKey;
 
+                    // Set up AbortController for Stopping/Cancelling
+                    const controller = new AbortController();
+                    activeController = controller;
+
+                    // Show stop button
+                    const stopBtn = document.getElementById('stopGenerationBtn');
+                    if (stopBtn) stopBtn.style.display = 'inline-flex';
+
                     const response = await fetch('/api/abhyas/chat', {
                         method: 'POST',
                         headers: headers,
+                        signal: controller.signal,
                         body: JSON.stringify({
                             message: query,
                             context: docContext,
-                            history: chatHistory
+                            history: chatHistory,
+                            language: localStorage.getItem('abhyas_language_pref') || 'hinglish'
                         })
                     });
 
-                    const data = await response.json();
-                    
+                    const level = response.headers.get('x-detected-level') || 'beginner';
+                    const domain = response.headers.get('x-detected-domain') || 'general';
+                    const provider = response.headers.get('x-detected-provider') || 'unknown';
+
                     const loader = document.getElementById('abhyasLoader');
                     if (loader) loader.remove();
 
-                    if (data.error) {
-                        throw new Error(data.error);
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        let errMsg = "Failed to communicate with ABHYAS backend.";
+                        try {
+                            const parsed = JSON.parse(errText);
+                            errMsg = parsed.error || errMsg;
+                        } catch(e) {}
+                        throw new Error(errMsg);
                     }
 
-                    // Display ABHYAS's response with Mentor Adapt badge
+                    // Display ABHYAS's response with Mentor Adapt badge and speech button
                     const abhyasDiv = document.createElement('div');
                     abhyasDiv.className = 'abhyas-line';
 
-                    // Build level badge
-                    const level  = data.level  || 'beginner';
-                    const domain = data.domain || 'general';
                     const levelEmoji  = { child: '🧒', beginner: '🌱', intermediate: '📚', expert: '🔬' }[level]  || '💡';
                     const domainEmoji = { tech: '💻', science: '🔭', math: '📐', history: '📜', interview: '🎯', general: '🌐' }[domain] || '💬';
                     const levelLabel  = { child: 'Child Mode', beginner: 'Beginner', intermediate: 'Intermediate', expert: 'Expert' }[level] || 'Beginner';
 
-                    const badgeHTML = `<div><span class="mentor-adapt-badge badge-${level}">${levelEmoji} ${levelLabel}</span><span class="domain-tag">${domainEmoji} ${domain}</span></div>`;
-                    abhyasDiv.innerHTML = badgeHTML + parseMarkdown(data.reply);
+                    const badgeHTML = `
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px;">
+                            <div>
+                                <span class="mentor-adapt-badge badge-${level}">${levelEmoji} ${levelLabel}</span>
+                                <span class="domain-tag">${domainEmoji} ${domain}</span>
+                            </div>
+                            <button class="btn-speak" title="Speak Aloud" onclick="speakResponse(this, this.closest('.abhyas-line').querySelector('.stream-content').innerHTML)">🔊 Speak</button>
+                        </div>
+                        <div class="voice-wave-container">
+                            <div class="voice-status">🎙️ Assistant Speaking...</div>
+                            <div class="wave-bars">
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    abhyasDiv.innerHTML = badgeHTML + '<div class="stream-content"></div><span class="stream-caret"></span>';
                     terminalScreen.appendChild(abhyasDiv);
                     terminalScreen.scrollTop = terminalScreen.scrollHeight;
 
+                    const streamContentEl = abhyasDiv.querySelector('.stream-content');
+                    const caretEl = abhyasDiv.querySelector('.stream-caret');
+
+                    // Read stream
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let textAccumulator = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunkText = decoder.decode(value, { stream: true });
+                        textAccumulator += chunkText;
+
+                        // Incrementally parse and update content
+                        streamContentEl.innerHTML = parseMarkdown(textAccumulator);
+                        
+                        // Scroll automatically
+                        terminalScreen.scrollTop = terminalScreen.scrollHeight;
+                    }
+
+                    // Clean up after stream completion
+                    if (caretEl) caretEl.remove();
+                    if (stopBtn) stopBtn.style.display = 'none';
+                    activeController = null;
+
+                    // Render quick chips for interactive follow-ups
+                    renderFollowUpChips(abhyasDiv, level, domain);
+                    terminalScreen.scrollTop = terminalScreen.scrollHeight;
+
+                    // Real-time Auto-Speak if enabled by user
+                    if (localStorage.getItem('abhyas_auto_speak') === 'true') {
+                        const speakBtn = abhyasDiv.querySelector('.btn-speak');
+                        if (speakBtn) {
+                            speakResponse(speakBtn, streamContentEl.innerHTML);
+                        }
+                    }
+
                     // Update history
                     chatHistory.push({ role: 'user', content: query });
-                    chatHistory.push({ role: 'model', content: data.reply });
+                    chatHistory.push({ role: 'model', content: textAccumulator });
 
                     if (chatHistory.length > 20) {
                         chatHistory.shift();
@@ -1200,6 +2091,22 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 } catch (err) {
                     const loader = document.getElementById('abhyasLoader');
                     if (loader) loader.remove();
+
+                    const stopBtn = document.getElementById('stopGenerationBtn');
+                    if (stopBtn) stopBtn.style.display = 'none';
+                    activeController = null;
+
+                    // Check if it was aborted by user
+                    if (err.name === 'AbortError') {
+                        const cancelDiv = document.createElement('div');
+                        cancelDiv.className = 'abhyas-line';
+                        cancelDiv.style.color = 'var(--text-muted)';
+                        cancelDiv.style.fontStyle = 'italic';
+                        cancelDiv.innerHTML = `[SYSTEM]: Generation stopped by user.`;
+                        terminalScreen.appendChild(cancelDiv);
+                        terminalScreen.scrollTop = terminalScreen.scrollHeight;
+                        return;
+                    }
 
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'abhyas-line';
@@ -1301,16 +2208,20 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 this.h = 48;
                 
                 // Initialize default physics/anim states
-                this.x = -this.w;
-                this.y = 0;
-                this.vx = 0.65;
-                this.rowOffset = 0;
-                this.dirRow = 2; // Walking right
-                this.actionType = 'walk';
+                this.x = 10;
+                this.y = 10;
+                this.vx = 0.8;
+                this.vy = 0.6;
+                this.angle = 0;
+                this.isDancing = false;
+                this.danceTimer = 0;
+                
+                const outfits = [0, 8, 16, 24, 32, 40, 48];
+                this.rowOffset = outfits[Math.floor(Math.random() * outfits.length)];
+                this.dirRow = 2; // Default facing right
                 this.animFrame = 0;
 
-                // Trigger initial randomized reset
-                this.resetState(600);
+                this.randomizeVelocity();
 
                 // Cycle frame loop at 160ms interval
                 setInterval(() => {
@@ -1318,32 +2229,28 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 }, 160);
             }
 
-            resetState(panelW) {
-                // Outfits correspond to rows: 0, 8, 16, 24, 32, 40, 48
-                const outfits = [0, 8, 16, 24, 32, 40, 48];
-                this.rowOffset = outfits[Math.floor(Math.random() * outfits.length)];
+            randomizeVelocity() {
+                const speed = 0.7 + Math.random() * 0.8;
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+            }
 
-                // 25% chance of doing a custom special action pose instead of standard walk
-                this.actionType = (Math.random() < 0.25) ? 'special' : 'walk';
-
-                // Randomize direction walk (50% left-to-right, 50% right-to-left)
-                const walkRight = Math.random() > 0.5;
-
-                if (walkRight) {
-                    this.vx = 0.4 + Math.random() * 0.55; // Random walking speed
-                    // Row 2 is walk right. Rows 4, 5, 6 are waving/acting/dancing
-                    this.dirRow = (this.actionType === 'special') ? (4 + Math.floor(Math.random() * 3)) : 2;
-                    this.x = -this.w; // Start off-screen left
-                } else {
-                    this.vx = -(0.4 + Math.random() * 0.55); // Random walking speed left
-                    // Row 1 is walk left. Rows 4, 5, 6 are waving/acting/dancing
-                    this.dirRow = (this.actionType === 'special') ? (4 + Math.floor(Math.random() * 3)) : 1;
-                    this.x = panelW; // Start off-screen right
+            onCollide() {
+                // When hitting walls or corners, 18% chance to trigger an annoying cute dance!
+                if (Math.random() < 0.18 && !this.isDancing) {
+                    this.isDancing = true;
+                    this.danceTimer = 35 + Math.floor(Math.random() * 45); // 35-80 updates
+                    
+                    // Select a random outfit and special action row
+                    const outfits = [0, 8, 16, 24, 32, 40, 48];
+                    this.rowOffset = outfits[Math.floor(Math.random() * outfits.length)];
+                    this.dirRow = 4 + Math.floor(Math.random() * 3); // Rows 4, 5, 6 are special actions
                 }
             }
 
             cycleAnimation() {
-                // Cycle walk frames (cols 0, 1, 2)
+                // Cycle walk/dance frames (cols 0, 1, 2)
                 this.animFrame = (this.animFrame + 1) % 3;
                 const posX = -this.animFrame * 48;
                 
@@ -1353,20 +2260,104 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
 
             update(panelW, panelH) {
-                // Walk horizontally
-                this.x += this.vx;
-
-                // Rest position at bottom of the terminal log, right above input bar
-                this.y = panelH - 110;
-
-                // Check boundary triggers and reset state once offscreen
-                if (this.vx > 0 && this.x > panelW) {
-                    this.resetState(panelW);
-                } else if (this.vx < 0 && this.x < -this.w) {
-                    this.resetState(panelW);
+                // Handle dancing state
+                if (this.isDancing) {
+                    this.danceTimer--;
+                    if (this.danceTimer <= 0) {
+                        this.isDancing = false;
+                        this.randomizeVelocity();
+                    }
+                    
+                    // While dancing, apply cute wiggles or spins
+                    this.angle = (this.angle + 15) % 360;
+                    const scale = 1.1 + 0.15 * Math.sin(Date.now() / 80);
+                    this.characterEl.style.transform = `rotate(${this.angle}deg) scale(${scale})`;
+                    this.el.style.left = `${this.x}px`;
+                    this.el.style.top = `${this.y}px`;
+                    return;
                 }
 
-                // Render styles
+                // Apply velocity
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Edge margins - keep the sprite strictly in the outer frame (thickness: 75px)
+                const margin = 75; 
+                
+                // Outer boundaries
+                const minX = 0;
+                const maxX = panelW - this.w;
+                const minY = 0;
+                const maxY = panelH - this.h;
+
+                // Bounce off outer boundary edges
+                if (this.x < minX) {
+                    this.x = minX;
+                    this.vx = Math.abs(this.vx);
+                    this.onCollide();
+                } else if (this.x > maxX) {
+                    this.x = maxX;
+                    this.vx = -Math.abs(this.vx);
+                    this.onCollide();
+                }
+
+                if (this.y < minY) {
+                    this.y = minY;
+                    this.vy = Math.abs(this.vy);
+                    this.onCollide();
+                } else if (this.y > maxY) {
+                    this.y = maxY;
+                    this.vy = -Math.abs(this.vy);
+                    this.onCollide();
+                }
+
+                // Inner forbidden rectangle bounds
+                const forbidMinX = margin;
+                const forbidMaxX = panelW - margin - this.w;
+                const forbidMinY = margin;
+                const forbidMaxY = panelH - margin - this.h;
+
+                // Check collision with the middle screen (avoid disturbing user)
+                if (this.x > forbidMinX && this.x < forbidMaxX && this.y > forbidMinY && this.y < forbidMaxY) {
+                    // Push out to the nearest safe edge and bounce
+                    const distToLeft   = this.x - forbidMinX;
+                    const distToRight  = forbidMaxX - this.x;
+                    const distToTop    = this.y - forbidMinY;
+                    const distToBottom = forbidMaxY - this.y;
+
+                    const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
+
+                    if (minDist === distToLeft) {
+                        this.x = forbidMinX;
+                        this.vx = -Math.abs(this.vx);
+                    } else if (minDist === distToRight) {
+                        this.x = forbidMaxX;
+                        this.vx = Math.abs(this.vx);
+                    } else if (minDist === distToTop) {
+                        this.y = forbidMinY;
+                        this.vy = -Math.abs(this.vy);
+                    } else {
+                        this.y = forbidMaxY;
+                        this.vy = Math.abs(this.vy);
+                    }
+                    this.onCollide();
+                }
+
+                // Waddling animation angle + subtle jump heights to make it look active & adorable
+                const waddleAngle = 14 * Math.sin(Date.now() / 120); 
+                const hopY = -5 * Math.abs(Math.sin(Date.now() / 90)); 
+                
+                // Set directional sprite row based on primary direction vector
+                if (Math.abs(this.vx) > Math.abs(this.vy)) {
+                    this.dirRow = (this.vx > 0) ? 2 : 1; // 2=Right, 1=Left
+                } else {
+                    this.dirRow = (this.vy > 0) ? 0 : 3; // 0=Down, 3=Up
+                }
+
+                // Apply dynamic transforms and offsets
+                this.characterEl.style.transform = `translateY(${hopY}px) rotate(${waddleAngle}deg)`;
+
+                // Render position styles
                 this.el.style.left = `${this.x}px`;
                 this.el.style.top = `${this.y}px`;
             }
@@ -1394,32 +2385,144 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
         });
 
         // ---------------------------------------------------------------------
-        // Gemini & OpenRouter API Key Dialog Handlers
+        // 🎙️ Startup Auto-Speak & Language Configuration Wizard Handlers
+        // ---------------------------------------------------------------------
+        const startupSpeakModal = document.getElementById('startupSpeakModal');
+        const startupOtherLangInput = document.getElementById('startupOtherLangInput');
+        const startupOtherLangGroup = document.getElementById('startupOtherLangGroup');
+        const btnStartupOtherLang = document.getElementById('btnStartupOtherLang');
+
+        function goToStep2(autoSpeakChoice) {
+            localStorage.setItem('abhyas_auto_speak', autoSpeakChoice ? 'true' : 'false');
+            
+            const step1 = document.getElementById('startupStep1');
+            const step2 = document.getElementById('startupStep2');
+            
+            // Fade-out Step 1
+            step1.classList.add('fade-out');
+            
+            setTimeout(() => {
+                step1.style.display = 'none';
+                step1.classList.remove('fade-out');
+                
+                // Show and fade-in Step 2
+                step2.style.display = 'flex';
+                step2.classList.add('fade-in');
+            }, 250);
+        }
+
+        function showStartupOtherLanguageInput() {
+            btnStartupOtherLang.style.display = 'none';
+            startupOtherLangGroup.style.display = 'flex';
+            startupOtherLangInput.focus();
+        }
+
+        function submitStartupCustomLanguage() {
+            const customLang = startupOtherLangInput.value.trim();
+            if (!customLang) {
+                alert("Please type a language, or pick one of the quick options above!");
+                return;
+            }
+            setStartupLanguage(customLang);
+        }
+
+        function setStartupLanguage(lang) {
+            localStorage.setItem('abhyas_language_pref', lang);
+            
+            const step2 = document.getElementById('startupStep2');
+            step2.classList.add('fade-out');
+            
+            setTimeout(() => {
+                startupSpeakModal.close();
+                
+                // Reset dialog step displays for future usage
+                step2.style.display = 'none';
+                step2.classList.remove('fade-out');
+                btnStartupOtherLang.style.display = 'block';
+                startupOtherLangGroup.style.display = 'none';
+                startupOtherLangInput.value = '';
+                document.getElementById('startupStep1').style.display = 'flex';
+                
+                // Re-enable and focus terminal input once setup is complete
+                const terminalInput = document.getElementById('terminalInput');
+                if (terminalInput) {
+                    terminalInput.disabled = false;
+                    terminalInput.focus();
+                }
+                
+                const autoSpeakEnabled = localStorage.getItem('abhyas_auto_speak') === 'true';
+                const formattedLang = lang.charAt(0).toUpperCase() + lang.slice(1);
+                
+                const notifyDiv = document.createElement('div');
+                notifyDiv.className = 'abhyas-line';
+                notifyDiv.style.color = 'var(--success)';
+                notifyDiv.innerHTML = `[SYSTEM]: Setup wizard complete! Auto-Speak: <strong>${autoSpeakEnabled ? 'ENABLED' : 'DISABLED'}</strong> | Primary Language: <strong>${formattedLang}</strong>. All coaching responses will be rendered in ${formattedLang}!`;
+                terminalScreen.appendChild(notifyDiv);
+                terminalScreen.scrollTop = terminalScreen.scrollHeight;
+            }, 250);
+        }
+
+        // ---------------------------------------------------------------------
+        // Gemini, OpenRouter, OpenAI, and ElevenLabs API Key Dialog Handlers
         // ---------------------------------------------------------------------
         const apiKeyModal = document.getElementById('apiKeyModal');
         const userApiKeyInput = document.getElementById('userApiKeyInput');
         const openRouterKeyInput = document.getElementById('openRouterKeyInput');
         const groqKeyInput = document.getElementById('groqKeyInput');
         const cerebrasKeyInput = document.getElementById('cerebrasKeyInput');
+        const openaiKeyInput = document.getElementById('openaiKeyInput');
+        const elevenKeyInput = document.getElementById('elevenKeyInput');
+        const ttsProviderSelect = document.getElementById('ttsProviderSelect');
+        const ttsVoiceSelect = document.getElementById('ttsVoiceSelect');
+        const ttsCustomVoiceInput = document.getElementById('ttsCustomVoiceInput');
+        const ttsCustomVoiceInputGroup = document.getElementById('ttsCustomVoiceInputGroup');
+        const ttsLanguageSelect = document.getElementById('ttsLanguageSelect');
+        const ttsCustomLanguageInput = document.getElementById('ttsCustomLanguageInput');
+        const ttsCustomLanguageInputGroup = document.getElementById('ttsCustomLanguageInputGroup');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
         const btnClearKey = document.getElementById('btnClearKey');
 
-        function openApiKeyModal() {
+        async function openApiKeyModal() {
             const currentGemini     = localStorage.getItem('abhyas_user_api_key') || '';
             const currentOpenRouter = localStorage.getItem('abhyas_user_openrouter_key') || '';
             const currentGroq       = localStorage.getItem('abhyas_user_groq_key') || '';
             const currentCerebras   = localStorage.getItem('abhyas_user_cerebras_key') || '';
+            const currentOpenAI     = localStorage.getItem('abhyas_user_openai_key') || '';
+            const currentEleven     = localStorage.getItem('abhyas_user_eleven_key') || '';
+            const currentProvider   = localStorage.getItem('abhyas_tts_provider') || 'local';
+            const currentLanguage   = localStorage.getItem('abhyas_language_pref') || 'hinglish';
 
             userApiKeyInput.value    = currentGemini;
             openRouterKeyInput.value = currentOpenRouter;
             groqKeyInput.value       = currentGroq;
             cerebrasKeyInput.value   = currentCerebras;
+            openaiKeyInput.value     = currentOpenAI;
+            elevenKeyInput.value     = currentEleven;
+            ttsProviderSelect.value  = currentProvider;
 
-            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.type = 'password');
-            ['btnToggleGeminiVisibility','btnToggleOpenRouterVisibility','btnToggleGroqVisibility','btnToggleCerebrasVisibility']
-                .forEach(id => document.getElementById(id).textContent = '👁️');
+            // Load and adapt custom language state
+            if (['hinglish', 'english', 'hindi'].includes(currentLanguage.toLowerCase())) {
+                ttsLanguageSelect.value = currentLanguage.toLowerCase();
+                ttsCustomLanguageInputGroup.style.display = 'none';
+                ttsCustomLanguageInput.value = '';
+            } else {
+                ttsLanguageSelect.value = 'custom';
+                ttsCustomLanguageInputGroup.style.display = 'block';
+                ttsCustomLanguageInput.value = currentLanguage;
+            }
 
-            btnClearKey.style.display = (currentGemini || currentOpenRouter || currentGroq || currentCerebras) ? 'block' : 'none';
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput, openaiKeyInput, elevenKeyInput].forEach(i => i.type = 'password');
+            ['btnToggleGeminiVisibility','btnToggleOpenRouterVisibility','btnToggleGroqVisibility','btnToggleCerebrasVisibility','btnToggleOpenAIVisibility','btnToggleElevenVisibility']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '👁️';
+                });
+
+            btnClearKey.style.display = (currentGemini || currentOpenRouter || currentGroq || currentCerebras || currentOpenAI || currentEleven) ? 'block' : 'none';
+            
+            // Populate voice dropdown and handle selection states
+            await updateVoiceDropdown();
+            
             apiKeyModal.showModal();
         }
 
@@ -1471,14 +2574,245 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
         }
 
+        function toggleOpenAIVisibility() {
+            const btn = document.getElementById('btnToggleOpenAIVisibility');
+            if (openaiKeyInput.type === 'password') {
+                openaiKeyInput.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                openaiKeyInput.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function toggleElevenVisibility() {
+            const btn = document.getElementById('btnToggleElevenVisibility');
+            if (elevenKeyInput.type === 'password') {
+                elevenKeyInput.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                elevenKeyInput.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function handleVoiceSelectChange() {
+            if (ttsVoiceSelect.value === 'custom') {
+                ttsCustomVoiceInputGroup.style.display = 'block';
+            } else {
+                ttsCustomVoiceInputGroup.style.display = 'none';
+            }
+        }
+
+        function handleLanguageSelectChange() {
+            if (ttsLanguageSelect.value === 'custom') {
+                ttsCustomLanguageInputGroup.style.display = 'block';
+                ttsCustomLanguageInput.focus();
+            } else {
+                ttsCustomLanguageInputGroup.style.display = 'none';
+            }
+        }
+
+        async function updateVoiceDropdown() {
+            const provider = ttsProviderSelect.value;
+            const savedVoice = localStorage.getItem('abhyas_tts_voice') || '';
+            
+            // Clear current options and reset input
+            ttsVoiceSelect.innerHTML = '';
+            ttsCustomVoiceInputGroup.style.display = 'none';
+            
+            if (provider === 'local') {
+                const opt = document.createElement('option');
+                opt.value = 'default';
+                opt.textContent = '👤 Browser Default (Local Speech)';
+                ttsVoiceSelect.appendChild(opt);
+                ttsVoiceSelect.disabled = true;
+                return;
+            }
+            
+            ttsVoiceSelect.disabled = false;
+            
+            if (provider === 'openai') {
+                const voices = [
+                    { id: 'alloy', name: 'Alloy - Neutral & Balanced' },
+                    { id: 'echo', name: 'Echo - Warm & Deep' },
+                    { id: 'fable', name: 'Fable - Narrative & Dramatic' },
+                    { id: 'onyx', name: 'Onyx - Crisp & Masculine' },
+                    { id: 'nova', name: 'Nova - Energetic & Bright' },
+                    { id: 'shimmer', name: 'Shimmer - Professional & Clear' }
+                ];
+                
+                // Add custom option
+                const optCustom = document.createElement('option');
+                optCustom.value = 'custom';
+                optCustom.textContent = '✍️ Paste Custom Voice ID...';
+                ttsVoiceSelect.appendChild(optCustom);
+                
+                let voiceSelected = false;
+                
+                voices.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.id;
+                    opt.textContent = `🗣️ ${v.name}`;
+                    if (savedVoice === v.id) {
+                        opt.selected = true;
+                        voiceSelected = true;
+                    }
+                    ttsVoiceSelect.appendChild(opt);
+                });
+                
+                if (!voiceSelected && savedVoice && savedVoice !== 'default') {
+                    ttsVoiceSelect.value = 'custom';
+                    ttsCustomVoiceInput.value = savedVoice;
+                } else if (!voiceSelected) {
+                    ttsVoiceSelect.value = 'alloy';
+                }
+                
+                handleVoiceSelectChange();
+                return;
+            }
+            
+            if (provider === 'elevenlabs') {
+                const optLoading = document.createElement('option');
+                optLoading.textContent = '🔄 Loading ElevenLabs voices...';
+                ttsVoiceSelect.appendChild(optLoading);
+                
+                const currentEleven = elevenKeyInput.value.trim() || localStorage.getItem('abhyas_user_eleven_key') || '';
+                
+                try {
+                    const headers = {};
+                    if (currentEleven) {
+                        headers['x-eleven-key'] = currentEleven;
+                    }
+                    
+                    const res = await fetch('/api/abhyas/voices', { headers });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.error || 'Server error fetching ElevenLabs voices');
+                    }
+                    
+                    const data = await res.json();
+                    ttsVoiceSelect.innerHTML = '';
+                    
+                    // Add Custom manual ID paste option
+                    const optCustom = document.createElement('option');
+                    optCustom.value = 'custom';
+                    optCustom.textContent = '✍️ Paste Custom Voice ID...';
+                    ttsVoiceSelect.appendChild(optCustom);
+                    
+                    let voiceSelected = false;
+                    
+                    if (data.voices && data.voices.length > 0) {
+                        // Separate generated vs library voices to make it super clear
+                        const generated = data.voices.filter(v => v.category === 'generated');
+                        const library = data.voices.filter(v => v.category !== 'generated');
+                        
+                        // Add generated voices first
+                        if (generated.length > 0) {
+                            const optGroupGen = document.createElement('optgroup');
+                            optGroupGen.label = '⭐ Free / Generated Voices';
+                            generated.forEach(v => {
+                                const opt = document.createElement('option');
+                                opt.value = v.voice_id;
+                                opt.textContent = `👤 ${v.name} (Hindi/Multilingual)`;
+                                if (savedVoice === v.voice_id || (!savedVoice && v.name.toLowerCase().includes('rudra'))) {
+                                    opt.selected = true;
+                                    voiceSelected = true;
+                                }
+                                optGroupGen.appendChild(opt);
+                            });
+                            ttsVoiceSelect.appendChild(optGroupGen);
+                        }
+                        
+                        // Add library voices
+                        if (library.length > 0) {
+                            const optGroupLib = document.createElement('optgroup');
+                            optGroupLib.label = '🔒 Library Voices (Paid Subscription)';
+                            library.forEach(v => {
+                                const opt = document.createElement('option');
+                                opt.value = v.voice_id;
+                                opt.textContent = `🔒 ${v.name} (${v.category || 'premade'})`;
+                                if (savedVoice === v.voice_id) {
+                                    opt.selected = true;
+                                    voiceSelected = true;
+                                }
+                                optGroupLib.appendChild(opt);
+                            });
+                            ttsVoiceSelect.appendChild(optGroupLib);
+                        }
+                        
+                        // If no voice matched savedVoice, auto-select "Rudra" or first generated
+                        if (!voiceSelected && data.voices.length > 0) {
+                            if (generated.length > 0) {
+                                const rudraVoice = generated.find(v => v.name.toLowerCase().includes('rudra'));
+                                ttsVoiceSelect.value = rudraVoice ? rudraVoice.voice_id : generated[0].voice_id;
+                            } else {
+                                ttsVoiceSelect.value = data.voices[0].voice_id;
+                            }
+                        }
+                    }
+                    
+                    // Restore manually entered voice ID if it doesn't match standard items
+                    if (!voiceSelected && savedVoice && savedVoice !== 'default') {
+                        ttsVoiceSelect.value = 'custom';
+                        ttsCustomVoiceInput.value = savedVoice;
+                    }
+                    
+                    handleVoiceSelectChange();
+                    
+                } catch (err) {
+                    console.error('Error fetching ElevenLabs voices:', err);
+                    ttsVoiceSelect.innerHTML = '';
+                    
+                    // Build manual backup options
+                    const optCustom = document.createElement('option');
+                    optCustom.value = 'custom';
+                    optCustom.textContent = '✍️ Paste Custom Voice ID...';
+                    ttsVoiceSelect.appendChild(optCustom);
+                    
+                    const optWarn = document.createElement('option');
+                    optWarn.disabled = true;
+                    optWarn.textContent = '⚠️ API Key blocks listing (voices_read missing)';
+                    ttsVoiceSelect.appendChild(optWarn);
+                    
+                    ttsVoiceSelect.value = 'custom';
+                    if (savedVoice && savedVoice !== 'default') {
+                        ttsCustomVoiceInput.value = savedVoice;
+                    } else {
+                        // Pre-populate with typical Rudra voice id or local helper if empty
+                        ttsCustomVoiceInput.value = '21m00Tcm4TlvDq8ikWAM'; 
+                    }
+                    
+                    handleVoiceSelectChange();
+                }
+            }
+        }
+
         function saveApiKey() {
             const rawGemini     = userApiKeyInput.value.trim();
             const rawOpenRouter = openRouterKeyInput.value.trim();
             const rawGroq       = groqKeyInput.value.trim();
             const rawCerebras   = cerebrasKeyInput.value.trim();
+            const rawOpenAI     = openaiKeyInput.value.trim();
+            const rawEleven     = elevenKeyInput.value.trim();
+            const provider      = ttsProviderSelect.value;
+            let languagePref    = ttsLanguageSelect.value;
+            let voice           = ttsVoiceSelect.value;
 
-            if (!rawGemini && !rawOpenRouter && !rawGroq && !rawCerebras) {
-                alert("Please enter at least one API key, or click 'Clear All' to reset.");
+            if (voice === 'custom') {
+                voice = ttsCustomVoiceInput.value.trim();
+            }
+
+            if (languagePref === 'custom') {
+                languagePref = ttsCustomLanguageInput.value.trim();
+                if (!languagePref) {
+                    alert("Please specify a custom language, or pick a standard one!");
+                    return;
+                }
+            }
+
+            if (!rawGemini && !rawOpenRouter && !rawGroq && !rawCerebras && !rawOpenAI && !rawEleven && provider !== 'local') {
+                alert("Please enter at least one API key, or select Local NLP engine.");
                 return;
             }
 
@@ -1487,22 +2821,38 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             rawGemini     ? (localStorage.setItem('abhyas_user_api_key', rawGemini),       parts.push('✨ Gemini'))     : localStorage.removeItem('abhyas_user_api_key');
             rawCerebras   ? (localStorage.setItem('abhyas_user_cerebras_key', rawCerebras),parts.push('🧠 Cerebras'))  : localStorage.removeItem('abhyas_user_cerebras_key');
             rawOpenRouter ? (localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter), parts.push('🌐 OpenRouter')) : localStorage.removeItem('abhyas_user_openrouter_key');
+            rawOpenAI     ? (localStorage.setItem('abhyas_user_openai_key', rawOpenAI),   parts.push('🗣️ OpenAI TTS')) : localStorage.removeItem('abhyas_user_openai_key');
+            rawEleven     ? (localStorage.setItem('abhyas_user_eleven_key', rawEleven),   parts.push('👤 ElevenLabs')) : localStorage.removeItem('abhyas_user_eleven_key');
+
+            localStorage.setItem('abhyas_tts_provider', provider);
+            localStorage.setItem('abhyas_language_pref', languagePref);
+            if (voice) {
+                localStorage.setItem('abhyas_tts_voice', voice);
+            }
 
             updateApiKeyBtnState();
             closeApiKeyModal();
 
+            const formattedLang = languagePref.charAt(0).toUpperCase() + languagePref.slice(1);
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--success)';
-            notifyDiv.innerHTML = `[SYSTEM]: Active providers: ${parts.join(', ')}. ABHYAS will auto-route for max speed & uptime!`;
+            notifyDiv.innerHTML = `[SYSTEM]: Voice config saved! Provider: <strong>${provider}</strong>, Voice ID: <strong>${voice || 'default'}</strong>, Primary Language: <strong>${formattedLang}</strong>. Active API integrations: ${parts.join(', ') || 'None'}`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
         function clearApiKey() {
-            ['abhyas_user_api_key','abhyas_user_openrouter_key','abhyas_user_groq_key','abhyas_user_cerebras_key']
+            ['abhyas_user_api_key','abhyas_user_openrouter_key','abhyas_user_groq_key','abhyas_user_cerebras_key','abhyas_user_openai_key','abhyas_user_eleven_key','abhyas_tts_provider','abhyas_tts_voice','abhyas_language_pref']
                 .forEach(k => localStorage.removeItem(k));
-            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.value = '');
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput, openaiKeyInput, elevenKeyInput].forEach(i => i.value = '');
+            ttsProviderSelect.value = 'local';
+            ttsVoiceSelect.innerHTML = '';
+            ttsCustomVoiceInput.value = '';
+            ttsCustomVoiceInputGroup.style.display = 'none';
+            ttsLanguageSelect.value = 'hinglish';
+            ttsCustomLanguageInput.value = '';
+            ttsCustomLanguageInputGroup.style.display = 'none';
             
             updateApiKeyBtnState();
             closeApiKeyModal();
@@ -1510,10 +2860,12 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--accent-secondary)';
-            notifyDiv.innerHTML = `[SYSTEM]: All credentials cleared. Add a Groq key (free, fastest) to get started!`;
+            notifyDiv.innerHTML = `[SYSTEM]: All credentials and voice preferences cleared. Add keys in settings to re-enable!`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
+
+
 
         function updateApiKeyBtnState() {
             const hasGroq       = !!localStorage.getItem('abhyas_user_groq_key');
@@ -1540,9 +2892,31 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
         }
 
-        // Initialize API key button state on load
+        // Initialize API key button state and voice choices on load
         window.addEventListener('DOMContentLoaded', () => {
             updateApiKeyBtnState();
+            
+            // Set initial selected values for TTS elements on page load
+            const currentProvider = localStorage.getItem('abhyas_tts_provider') || 'local';
+            ttsProviderSelect.value = currentProvider;
+            updateVoiceDropdown();
+
+            // Trigger startup Speak settings modal if not configured yet
+            if (localStorage.getItem('abhyas_auto_speak') === null || localStorage.getItem('abhyas_language_pref') === null) {
+                // Disable terminal input immediately to prevent typing before setup
+                const terminalInput = document.getElementById('terminalInput');
+                if (terminalInput) {
+                    terminalInput.disabled = true;
+                }
+                
+                // Show modal instantly
+                if (localStorage.getItem('abhyas_auto_speak') !== null && localStorage.getItem('abhyas_language_pref') === null) {
+                    // Skip Step 1 and go directly to Step 2
+                    document.getElementById('startupStep1').style.display = 'none';
+                    document.getElementById('startupStep2').style.display = 'flex';
+                }
+                startupSpeakModal.showModal();
+            }
         });
     </script>
 </body>
