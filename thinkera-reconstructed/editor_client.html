@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThinkEra Playground | Developer Sandboxed Editor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #faf7f2; /* Cozy warm cream background */
+            --panel-bg: rgba(255, 255, 255, 0.75); /* Frosted cream glassmorphism */
+            --border-color: rgba(138, 118, 233, 0.15); /* Soft lavender boundary */
+            --accent-primary: #7c62ee; /* Soft lavender accent */
+            --accent-secondary: #5e8f8d; /* Muted sage-teal */
+            --text-main: #3d3b38; /* Deep sepia charcoal for premium readability */
+            --text-muted: #807a73; /* Muted sepia gray */
+            --success: #6bb391; /* Soft pastel sage green */
+            --danger: #d97878; /* Dusty rose/coral pastel */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(138, 118, 233, 0.09) 0px, transparent 60%),
+                radial-gradient(at 90% 90%, rgba(94, 143, 141, 0.09) 0px, transparent 60%);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo span {
+            font-weight: 400;
+            font-size: 14px;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .actions-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        select {
+            font-size: clamp(0.75rem, 2vw, 0.875rem);
+            padding: 0.5rem 1rem;
+        }
+
+        select:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn {
+            font-size: clamp(0.75rem, 2vw, 0.875rem);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, var(--accent-primary), #644bd8);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .btn-run:hover {
+            box-shadow: 0 4px 15px rgba(124, 98, 238, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-hint {
+            background: rgba(94, 143, 141, 0.06);
+            border: 1px solid rgba(94, 143, 141, 0.15);
+            color: var(--accent-secondary);
+        }
+
+        .btn-hint:hover {
+            background: rgba(94, 143, 141, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Layout Structure */
+        .workspace {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Left Side: Editor & Output */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            border-right: 1px solid var(--border-color);
+        }
+
+        textarea {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            line-height: 1.6;
+            padding: 1rem;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        textarea:focus {
+            background: #151417; /* Soft darkening on focus for high immersion */
+        }
+
+        .output-panel {
+            flex: 0 0 auto;
+            min-height: 0;
+        }
+
+        .output-header {
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            padding: 0.625rem 1.25rem;
+            background: rgba(40, 38, 45, 0.6);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #928b80;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .output-console {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            font-family: 'Fira Code', monospace;
+            font-size: clamp(0.75rem, 2vw, 0.875rem);
+            color: #eae9fc;
+        }
+
+        /* Right Side: Mentor chat panel */
+        .mentor-panel {
+            flex: 0 0 35%;
+            min-width: 0;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mentor-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .mentor-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .mentor-title h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .mentor-title p {
+            font-size: 11px;
+            color: var(--success);
+        }
+
+        .mentor-chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            font-size: clamp(0.75rem, 2vw, 0.875rem);
+            max-width: 100%;
+        }
+
+        .bubble-system {
+            background: rgba(94, 143, 141, 0.08); /* Soft sage-teal */
+            border: 1px solid rgba(94, 143, 141, 0.15);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+        }
+
+        .bubble-ai {
+            background: rgba(138, 118, 233, 0.08); /* Soft lavender */
+            border: 1px solid rgba(138, 118, 233, 0.15);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-top-left-radius: 2px;
+            white-space: pre-wrap;
+        }
+
+        .test-case-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-color);
+        }
+        .tc-passed { border-left: 4px solid var(--success); }
+        .tc-failed { border-left: 4px solid var(--danger); }
+        
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        .bg-passed { background: rgba(107, 179, 145, 0.15); color: var(--success); }
+        .bg-failed { background: rgba(217, 120, 120, 0.15); color: var(--danger); }
+    @media (max-width: 768px) {
+    .workspace {
+        flex-direction: column;
+    }
+    .editor-container {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+    }
+    .mentor-panel {
+        width: 100% !important;
+        height: 40vh;
+    }
+    textarea {
+        font-size: 14px;
+    }
+    .output-panel {
+        height: 30vh;
+    }
+}
+@media (max-width: 480px) {
+    .logo { font-size: 20px; }
+    .actions-header { flex-wrap: wrap; gap: 8px; }
+    .btn { padding: 6px 12px; font-size: 12px; }
+    textarea { padding: 12px; }
+    .output-panel { height: 25vh; }
+    .mentor-panel { height: 45vh; }
+}
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">ThinkEra <span>RECONSTRUCTED</span></div>
+        <div class="actions-header">
+            <select id="langSelect" onchange="updateBoilerplate()">
+                <option value="cpp">C++</option>
+                <option value="javascript">JavaScript</option>
+            </select>
+            <button class="btn btn-hint" onclick="getMentorHint()">
+                ✨ Ask AI Mentor
+            </button>
+            <button class="btn btn-run" onclick="runCode()">
+                ▶ Run Code
+            </button>
+        </div>
+    </header>
+
+    <div class="workspace">
+        <!-- Editor & Console -->
+        <div class="editor-container">
+            <textarea id="editor" spellcheck="false"></textarea>
+            
+            <div class="output-panel">
+                <div class="output-header">
+                    <span>Terminal / Compilation Output</span>
+                    <span id="overallStatus">READY</span>
+                </div>
+                <div class="output-console" id="console">
+                    Click 'Run Code' to compile and evaluate your code against the Two Sum test cases!
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Mentor Panel -->
+        <div class="mentor-panel">
+            <div class="mentor-header">
+                <div class="mentor-avatar">🧠</div>
+                <div class="mentor-title">
+                    <h3>Gemini AI Contextual Mentor</h3>
+                    <p>● Ready to guide you</p>
+                </div>
+            </div>
+            
+            <div class="mentor-chat" id="chat">
+                <div class="chat-bubble bubble-system">
+                    👋 Hello, Jayesh! I am your ThinkEra AI Mentor. <br><br>
+                    Try to implement the **Two Sum** algorithm. If your compilation fails, or you get stuck on a logic bug, click the **'Ask AI Mentor'** button. I will point out your error and give you a conceptual hint *without* spoiling the answer!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOILERPLATES = {
+            cpp: `#include <iostream>\n#include <vector>\n#include <unordered_map>\n\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    // Write your O(N) optimized Two Sum solution here\n    // Hint: Use unordered_map to find the complement!\n    \n    return {};\n}`,
+            javascript: `function twoSum(nums, target) {\n    // Write your O(N) optimized Two Sum solution here\n    // Hint: Use a JavaScript Map()!\n    \n    return [];\n}`
+        };
+
+        function updateBoilerplate() {
+            const lang = document.getElementById('langSelect').value;
+            document.getElementById('editor').value = BOILERPLATES[lang];
+        }
+
+        // Initialize editor value
+        updateBoilerplate();
+
+        async function runCode() {
+            const code = document.getElementById('editor').value;
+            const language = document.getElementById('langSelect').value;
+            const consoleDiv = document.getElementById('console');
+            const statusSpan = document.getElementById('overallStatus');
+
+            consoleDiv.innerHTML = "Compiling and executing code on sandboxed evaluator...";
+            statusSpan.innerText = "RUNNING...";
+            statusSpan.style.color = "var(--accent-secondary)";
+
+            try {
+                const response = await fetch('http://localhost:5001/api/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, language })
+                });
+                
+                const data = await response.json();
+                
+                statusSpan.innerText = data.status;
+                statusSpan.style.color = data.status === "ACCEPTED" ? "var(--success)" : "var(--danger)";
+
+                let html = `<strong>Status: ${data.status}</strong> (${data.passed}/${data.total} Passed)<br><br>`;
+                
+                data.details.forEach(item => {
+                    const statusClass = item.status === "PASSED" ? "tc-passed" : "tc-failed";
+                    const badgeClass = item.status === "PASSED" ? "bg-passed" : "bg-failed";
+                    
+                    html += `
+                        <div class="test-case-item ${statusClass}">
+                            <strong>Test Case ${item.testCase}:</strong> <span class="badge ${badgeClass}">${item.status}</span><br>
+                            Input: <code>${item.input}</code><br>
+                            Expected: <code>${item.expected}</code><br>
+                            Actual: <code>${item.actual}</code>
+                        </div>
+                    `;
+                });
+                
+                consoleDiv.innerHTML = html;
+            } catch (err) {
+                consoleDiv.innerHTML = `<span style="color: var(--danger)">Error connecting to local compilation server. Make sure you started the backend via 'node server.js'!</span><br><br>${err.message}`;
+                statusSpan.innerText = "SERVER ERROR";
+                statusSpan.style.color = "var(--danger)";
+            }
+        }
+
+        async function getMentorHint() {
+            const code = document.getElementById('editor').value;
+            const language = document.getElementById('langSelect').value;
+            const consoleContent = document.getElementById('console').innerText;
+            const chatDiv = document.getElementById('chat');
+
+            // Append student loading bubble
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = "chat-bubble bubble-ai";
+            loadingBubble.innerText = "🤖 Querying your code bugs... Let me analyze your approach...";
+            chatDiv.appendChild(loadingBubble);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+
+            try {
+                const response = await fetch('http://localhost:5001/api/mentor/hint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        code, 
+                        language, 
+                        errorContext: consoleContent,
+                        problemStatement: "Two Sum"
+                    })
+                });
+
+                const data = await response.json();
+                loadingBubble.innerText = data.hint;
+            } catch (err) {
+                loadingBubble.className = "chat-bubble bubble-system";
+                loadingBubble.style.borderColor = "var(--danger)";
+                loadingBubble.innerText = "❌ Failed to fetch hint from local server. Verify that your backend server is running and check console errors!";
+            }
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>

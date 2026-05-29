@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V.A.N.I. Web Interview Coach | Elite 10+ LPA Preparation Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Mermaid.js for gorgeous dynamic system architecture diagram renders -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+    --text-muted: #807a73; /* Muted sepia gray */
+    --success: #6bb391; /* Soft pastel sage green */
+    --warning: #e29e67; /* Soft peach/apricot pastel */
+    --danger: #d97878; /* Dusty rose/coral pastel */
+    --sidebar-width: 280px; /* Responsive sidebar width */
+    --interactive-flex: 1.4; /* Flex factor for right panel */
+    --font-base: clamp(14px, 1.2vw, 18px);
+}
+html { font-size: var(--font-base); }
+
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(138, 118, 233, 0.09) 0px, transparent 60%),
+                radial-gradient(at 100% 100%, rgba(94, 143, 141, 0.09) 0px, transparent 60%);
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: var(--sidebar-width);
+            background: rgba(245, 241, 234, 0.85); /* Highly aesthetic soft sepia-cream aside */
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .brand-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand-logo {
+            font-size: 23px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-subtitle {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+
+        .nav-item {
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(138, 118, 233, 0.04);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: rgba(138, 118, 233, 0.08);
+            border: 1px solid rgba(138, 118, 233, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .nav-category {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #928b80;
+            margin: 16px 16px 6px 16px;
+        }
+
+        .profile-card {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.01);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13.5px;
+            color: #ffffff;
+        }
+
+        .profile-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .profile-info p {
+            font-size: 11px;
+            color: var(--accent-secondary);
+            font-weight: 500;
+        }
+
+        /* Main Dashboard Window */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 22px 32px;
+            background: rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title h1 {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .server-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(107, 179, 145, 0.08);
+            border: 1px solid rgba(107, 179, 145, 0.15);
+            color: var(--success);
+            padding: 6px 14px;
+            border-radius: 30px;
+        }
+
+        .content-viewport {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        /* Left Panel */
+        .workspace-panel {
+            flex: 1 1 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 100%;
+        }
+
+        .glass-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(120, 110, 95, 0.05), 0 2px 12px rgba(138, 118, 233, 0.08);
+        }
+
+        /* Right Panel */
+        .interactive-panel {
+            flex: var(--interactive-flex);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 100%;
+        }
+
+        /* Question Rows */
+        .question-row {
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-row:hover {
+            background: rgba(138, 118, 233, 0.04);
+            border-color: rgba(138, 118, 233, 0.2);
+            transform: translateX(3px);
+        }
+
+        .question-row.active {
+            background: rgba(138, 118, 233, 0.08);
+            border-color: var(--accent-primary);
+        }
+
+        .question-title {
+            font-size: 14.5px;
+            font-weight: 500;
+            line-height: 1.4;
+            color: var(--text-main);
+            max-width: 100%;
+        }
+
+        .question-arrow {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        /* Stepper header */
+        .stepper-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            font-size: clamp(10px, 1vw, 12px);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            color: var(--accent-secondary);
+        }
+
+        .step-dot-container {
+            display: flex;
+            gap: 6px;
+        }
+
+        .step-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.25s;
+        }
+
+        .step-dot.active {
+            background: var(--accent-secondary);
+            box-shadow: 0 0 6px var(--accent-secondary);
+        }
+
+        .step-card {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 320px;
+        }
+
+        .step-card.active {
+            display: flex;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-display {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .strategy-content {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: #4a4742;
+        }
+
+        /* System Design Diagrams Container */
+        .diagram-section {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .diagram-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-secondary);
+        }
+
+        .mermaid-container {
+            width: 100%;
+            overflow-x: auto;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Custom SVG rendering properties for Mermaid (Muting dark lines) */
+        .mermaid svg {
+            background: transparent !important;
+        }
+
+        .model-answer-block {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14.5px;
+            line-height: 1.65;
+            color: var(--text-main);
+            white-space: pre-wrap;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .btn-stepper-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(138, 118, 233, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), #644bd8);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(124, 98, 238, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-voice {
+            background: rgba(94, 143, 141, 0.05);
+            border: 1px solid rgba(94, 143, 141, 0.15);
+            color: var(--accent-secondary);
+        }
+
+        .btn-voice:hover {
+            background: rgba(94, 143, 141, 0.1);
+        }
+
+        /* Speaking Sandbox UI */
+        .sandbox-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .timer-display {
+            font-size: 54px;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-secondary);
+            text-shadow: 0 2px 8px rgba(94, 143, 141, 0.1);
+        }
+
+        .waveform {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            height: 60px;
+            margin: 10px 0;
+        }
+
+        .waveform-bar {
+            width: 4px;
+            height: 12px;
+            background: linear-gradient(180deg, var(--accent-secondary), var(--accent-primary));
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .waveform.active .waveform-bar {
+            animation: bounce 1.1s ease-in-out infinite alternate;
+        }
+
+        .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.25s; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.05s; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.35s; }
+        .waveform-bar:nth-child(6) { animation-delay: 0.15s; }
+        .waveform-bar:nth-child(7) { animation-delay: 0.3s; }
+        .waveform-bar:nth-child(8) { animation-delay: 0.2s; }
+
+        @keyframes bounce {
+            0% { height: 10px; }
+            100% { height: 42px; } /* Muted bounce height for pastel style */
+        }
+
+        .rating-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .stars-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .star {
+            font-size: 26px;
+            color: rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .star.selected, .star:hover {
+            color: var(--warning);
+            text-shadow: 0 2px 6px rgba(243, 200, 146, 0.2);
+        }
+
+        textarea {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13.5px;
+            resize: none;
+            width: 100%;
+            height: 60px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-primary);
+        }
+
+        /* Analytics Tab */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 4px 12px rgba(120, 110, 95, 0.02);
+        }
+
+        .stat-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .history-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+
+        .history-container {
+            max-height: 380px;
+            overflow-y: auto;
+        }
+    /* Responsive Adjustments */
+@media (max-width: 480px) {
+    aside {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: row;
+        align-items: center;
+        padding: 12px;
+        overflow-x: auto;
+    }
+    .brand-header, .nav-menu {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .content-viewport {
+        flex-direction: column;
+        padding: 16px;
+        gap: 16px;
+    }
+    .workspace-panel, .interactive-panel {
+        flex: 1 1 auto;
+    }
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+    }
+    .header-title h1 { font-size: 18px; }
+    .header-title p { font-size: 12px; }
+        .hamburger { display: block; }
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+        .btn-action { width: 100%; }
+        body { overflow-x: hidden; }
+        /* Ensure panels stack vertically */
+        .workspace-panel, .interactive-panel { flex: 1 1 100%; }
+        .content-viewport { padding: 1rem; gap: 1rem; }
+}
+
+/* Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+    aside { width: 200px; }
+    .content-viewport { gap: 24px; }
+    .interactive-panel { flex: 1.2; }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+    aside { width: var(--sidebar-width); }
+    .interactive-panel { flex: var(--interactive-flex); }
+}
+
+/* Collapsed Sidebar */
+aside.collapsed { display: none; }
+</style>
+</head>
+<body>
+
+    <!-- Sidebar navigation -->
+    <aside>
+        <div class="brand-header">
+            <div class="brand-logo">🎙️ V.A.N.I. Coach</div>
+            <div class="brand-subtitle">10+ LPA Interview Engine</div>
+        </div>
+        
+        <div class="nav-menu">
+            <div class="nav-category">Question Tracks</div>
+            <div class="nav-item active" onclick="switchTrack('1')" id="nav-track-1">
+                <span>💬</span> HR & Behavioral
+            </div>
+            <div class="nav-item" onclick="switchTrack('2')" id="nav-track-2">
+                <span>🏗️</span> Project Architecture
+            </div>
+            <div class="nav-item" onclick="switchTrack('3')" id="nav-track-3">
+                <span>📚</span> CS Fundamentals
+            </div>
+            
+            <div class="nav-category">Analytics & Logs</div>
+            <div class="nav-item" onclick="switchTab('analytics')" id="nav-analytics">
+                <span>📈</span> Practice Analytics
+            </div>
+            <div class="nav-item" onclick="showFrameworkDetails()">
+                <span>🎙️</span> VANI Framework
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-avatar">JK</div>
+            <div class="profile-info">
+                <h4>Jayesh Kumar</h4>
+                <p>Full-Stack & AI Engineer</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main>
+        <header>
+            <div class="header-title">
+                <h1 id="trackTitle">HR & Behavioral (STAR Method Focused)</h1>
+                <p id="trackSubtitle">Practice pitching answers using structural situational matrices</p>
+            </div>
+            <div id="serverStatus" class="server-status" >
+                    ● Backend Server Connected
+                </div>
+                <button id="sidebarToggle" class="hamburger">☰</button>
+        </header>
+
+        <div class="content-viewport">
+            <!-- Left Panel: Question list -->
+            <div class="workspace-panel">
+                <div class="glass-card flex-column-full" id="leftPanelCard">
+                    <h3 class="panel-title" id="listTitle">Available Questions</h3>
+                    <div class="full-flex overflow-auto" id="questionList">
+                        <!-- Questions will inject here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Stepper panel -->
+            <div class="interactive-panel">
+                <div class="glass-card flex-column-full" id="stepperContainer">
+                    <div class="stepper-header">
+                        <span id="stepName">Step 1: The Question</span>
+                        <div class="step-dot-container">
+                            <div class="step-dot active" id="dot-1"></div>
+                            <div class="step-dot" id="dot-2"></div>
+                            <div class="step-dot" id="dot-3"></div>
+                            <div class="step-dot" id="dot-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Question display -->
+                    <div class="step-card active" id="stepCard-1">
+                        <div class="full-flex">
+                            <div class="question-display" id="step1-q">
+                                Select a question from the left sidebar to start your interactive prep!
+                            </div>
+                            <p class="subtext">
+                                VANI is ready to evaluate you. Press 'Speak Question' to have your AI vocal assistant read it out loud, helping you practice auditory listening cues!
+                            </p>
+                        </div>
+                        <button class="btn-action btn-voice align-start" onclick="speakCurrentQuestion()">
+                            🔊 Ask VANI to Speak Question
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Strategy display + Dynamic Mermaid Diagrams -->
+                    <div class="step-card" id="stepCard-2">
+                        <h4 class="section-header">Strategy Corner</h4>
+                        <div class="strategy-content full-flex overflow-auto" id="step2-strategy">
+                            Strategy details...
+                        </div>
+                        
+                        <!-- System Architecture Diagram Card (Dynamically Rendered) -->
+                        <div class="diagram-section hidden" id="sysDiagramSection">
+                            <span class="diagram-title">👁️ System Architecture Diagram</span>
+                            <div class="mermaid-container">
+                                <pre class="mermaid" id="mermaidContainer"></pre>
+                            </div>
+                        </div>
+
+                        <button class="btn-action btn-voice align-start mt-10" onclick="speakCurrentStrategy()">
+                            🔊 Read Strategy Out Loud
+                        </button>
+                    </div>
+
+                    <!-- Step 3: Model Answer display -->
+                    <div class="step-card" id="stepCard-3">
+                        <div class="flex-between">
+                            <h4 class="section-header">Elite Model Answer</h4>
+                            <button class="btn-action btn-small" onclick="copyModelAnswer()">
+                                📋 Copy Answer
+                            </button>
+                        </div>
+                        <div class="model-answer-block" id="step3-model">
+                            Model answer...
+                        </div>
+                        <button class="btn-action btn-voice align-start" onclick="speakCurrentModel()">
+                            🔊 Announce Model Answer
+                        </button>
+                    </div>
+
+                    <!-- Step 4: Active Speaking Sandbox -->
+                    <div class="step-card" id="stepCard-4">
+                        <div class="sandbox-container">
+                            <div class="timer-display" id="timer">00:00</div>
+                            <div class="waveform" id="visualizer">
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                            </div>
+                            
+                            <button class="btn-action btn-primary" id="btnTimerToggle" onclick="toggleTimer()">
+                                🎙️ Start speaking practice
+                            </button>
+
+                            <!-- Self assessment block -->
+                            <div class="rating-container" id="selfAssesmentBlock" class="hidden">
+                                <h4 class="subtitle-header">V.A.N.I. Performance Self-Rating</h4>
+                                <div class="stars-row">
+                                    <span class="star" onclick="setRating(1)" id="star-1">★</span>
+                                    <span class="star" onclick="setRating(2)" id="star-2">★</span>
+                                    <span class="star" onclick="setRating(3)" id="star-3">★</span>
+                                    <span class="star" onclick="setRating(4)" id="star-4">★</span>
+                                    <span class="star" onclick="setRating(5)" id="star-5">★</span>
+                                </div>
+                                <textarea id="selfNotes" placeholder="Type quick notes on your vocal clarity, fillers, or STAR structure bounds..."></textarea>
+                                <button class="btn-action btn-primary full-width-btn" onclick="savePracticeSession()">
+                                    ✔ Log Practice Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Controls -->
+                    <div class="btn-stepper-container">
+                        <button class="btn-action" id="btnPrevStep" onclick="prevStep()" disabled>
+                            ← Back
+                        </button>
+                        <button class="btn-action btn-primary" id="btnNextStep" onclick="nextStep()" disabled>
+                            Next Step →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Mermaid diagrams compiler config with premium cream pastel aesthetics
+        // Sidebar toggle logic for mobile
+        const sidebarToggleBtn = document.getElementById('sidebarToggle');
+        const sidebarElem = document.querySelector('aside');
+        if (sidebarToggleBtn && sidebarElem) {
+            sidebarToggleBtn.addEventListener('click', () => {
+                sidebarElem.classList.toggle('collapsed');
+            });
+        }
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'base',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            themeVariables: {
+                primaryColor: '#fcfaf7',
+                primaryTextColor: '#3d3b38',
+                primaryBorderColor: 'rgba(138, 118, 233, 0.2)',
+                lineColor: '#807a73',
+                secondaryColor: '#faf7f2',
+                tertiaryColor: '#ffffff'
+            }
+        });
+
+        // Integrated custom questions matching actual codebase parsing
+        const QUESTIONS_DATA = {
+            "1": {
+                name: "HR & Behavioral (STAR Method Focused)",
+                subtitle: "Practice pitching answers using structural situational matrices",
+                questions: [
+                    {
+                        q: "Tell me about yourself.",
+                        strategy: "Structure: 1. Present (BCA final-year student, full-stack + AI dev), 2. Past (built 3 production products), 3. Future (seeking a high-growth startup where you can build fast). Keep it under 2 minutes.",
+                        model: "Hi, I am Jayesh Kumar, a final-year Computer Applications student specializing in Full-Stack development and AI systems integration. Over the last two years, I've focused heavily on building production-grade software products from scratch rather than just studying theory. For instance, I built 'ThinkEra', a full-stack DSA learning platform with a live coding editor and built-in AI mentor, and 'VANI', a fully offline-capable AI voice assistant. My goal is to join a fast-paced product engineering team where I can solve high-scale engineering problems, apply my AI integration skills, and write clean, robust code."
+                    },
+                    {
+                        q: "Why should we hire a BCA fresher for a premium engineering role (10+ LPA)?",
+                        strategy: "Pitch your practical skills as vastly superior to the average theoretical engineer. Point out your track record of building production products (Next.js, Node, React Native, Ollama, Vector Embeddings).",
+                        model: "While many degree holders spend four years solely on theoretical textbooks, I have focused on shipping actual, running applications. I have designed and deployed a Next.js full-stack platform (ThinkEra), developed a cross-platform React Native habit tracker (KRIYA), and built a local AI voice assistant with vector search (VANI). I understand REST APIs, SQL indexing, vector embeddings, and modular frontend architectures. I don't need hand-holding; I am ready to write production-grade code on day one. You are hiring my shipping speed, self-starting nature, and technical execution capacity, not a degree certificate."
+                    },
+                    {
+                        q: "Describe a difficult technical bug you solved.",
+                        strategy: "Use the STAR method. Describe a problem in ThinkEra (e.g., code editor evaluation sandbox security or state management lag) or VANI (e.g., latency in LLM responses or microphone stream synchronization).",
+                        model: "While building 'VANI', my offline AI voice assistant, I hit a major bottleneck: the local Ollama LLM execution on consumer laptops caused a 5-second response latency, ruining the voice assistant conversation flow. To solve this, I designed a hybrid execution system. I wrote a command parser in Python that first checks for high-priority local intents. For general conversation, I integrated a LiveKit streaming pipe connected to the Gemini API, streaming audio chunks back. I also built a fallback switch so that if the internet drops, it seamlessly routes queries to the local Ollama model. This hybrid pipeline cut vocal latency from 5 seconds to under 800ms while maintaining 100% offline reliability."
+                    }
+                ]
+            },
+            "2": {
+                name: "Project Architecture & Resume Deep Dive",
+                subtitle: "Deep-dive analysis of your actual GitHub codebase implementations",
+                questions: [
+                    {
+                        q: "How did you design and implement the in-browser code editor and evaluator in ThinkEra?",
+                        strategy: "Explain the full stack workflow: Frontend (Monaco/Textarea) -> API Request -> compilation container / sandbox evaluation -> returning JSON test cases status. Explain security precautions.",
+                        model: "In ThinkEra, the goal was a frictionless DSA practicing UI. I built the frontend with React.js using a responsive layout styled via Tailwind CSS, rendering code inputs. When the student hits 'Submit', the frontend triggers a POST request containing the source code and problem ID to our Node.js/Express backend. The backend fetches the official test cases from our PostgreSQL database. To run the evaluation safely, the backend initializes a sandboxed process, feeds the input stream into the compiled binary (e.g., using child processes and resource limits on CPU/RAM), compares stdout against the target output, and returns a detailed test case evaluation JSON. This gives students instant, interactive compiler feedback.",
+                        diagram: `graph TD
+    Client[Next.js Client Monaco Playground] -->|1. POST /api/run| Server[Node/Express Server]
+    Server -->|2. Query Test Cases| DB[(PostgreSQL Supabase)]
+    Server -->|3. Fork Sandbox Subprocess| Sandbox[Isolated Node/C++ Sandbox]
+    Sandbox -->|4. Assert Outputs| Assert[Test assertion]
+    Assert -->|5. Return compile details JSON| Client
+    Client -->|6. Hint Prompt Trigger| Gemini[Gemini 2.5 Flash Mentor API]`
+                    },
+                    {
+                        q: "How did you design and implement the automatic content moderation system in TechEra (ThinkEra)? What are the database schema implications of the two-strike ban policy?",
+                        strategy: "Focus on: 1. Heuristics & Matching: Regex scans on the Next.js API route before database inserting to block gaaliyan. 2. PostgreSQL Cascade Deletes: Explain how deleting from users cascades and purges attempts, posts, comments, and streaks, saving server compute.",
+                        model: "In TechEra, content safety is fully automated on Next.js serverless routes. When a post is submitted, the API scans the full text against banned regex patterns matching English and Hindi/Hinglish gaaliyan, explicit, and hate speech. If a violation is hit, the system updates a warning record in the database. On the first warning, the post is blocked and the user is warned. On the second warning, the user's account is permanently deleted. From a database design perspective, I implemented this utilizing PostgreSQL's ON DELETE CASCADE constraints. By executing a delete query on the primary Clerk-synchronized 'users' record using a Supabase service role client, PostgreSQL automatically triggers cascading deletions of the user's streaks, attempts, posts, and comments in a single transactional operation, ensuring absolute data integrity.",
+                        diagram: `graph TD
+    Post[Submit POST /api/community/posts] -->|1. Regex Scans| Match{Banned Word?}
+    Match -->|No| Insert[Insert Post DB]
+    Match -->|Yes| Warning[Check Warning Count]
+    Warning -->|First Violation| Warn[Insert Warn Record - Return 422 warning]
+    Warning -->|Second Violation| Ban[cascade delete from users - Return 403 Ban]
+    Ban -->|DB Cascade Trigger| DeleteAttempts[Delete attempts]
+    Ban -->|DB Cascade Trigger| DeletePosts[Delete posts]
+    Ban -->|DB Cascade Trigger| DeleteStreaks[Delete streaks]`
+                    },
+                    {
+                        q: "How does Vani solve the 'accent gap' in Text-To-Speech (TTS) engines when speaking Hinglish? Explain the design of your strict phonetic rewrite layer.",
+                        strategy: "Outline: 1. Core Problem: TTS engines read Hinglish phonetically wrong. 2. Solution: Vani's strict phonetic compiler layer (hinglish_speech.py). 3. Compilation Pipeline: Multi-word phrase regex scans (longest-match first) followed by anchored token word boundaries using whole-word dictionary map. Give concrete phonetic mappings.",
+                        model: "To solve the accent gap where English TTS engines mispronounce Hinglish words (like 'theek', 'hoon', 'kyun') with awkward mechanical English accents, I designed a strict phonetic compiler layer in Vani (hinglish_speech.py). When Vani generates a textual response, before sending it to the audio TTS driver, it compiles the text through a two-stage regex pipeline. The first pass executes a longest-phrase match replacing multi-word sequences (e.g., 'koi baat nahi' into 'ko-ee baat na-hi'). The second pass breaks remaining text into individual tokens, executing boundary-anchored matches replacing individual Hinglish words (e.g. mapping 'actually' to 'ak-chu-lee', 'kyun' to 'kyoon', and 'lekin' to 'lay-kin'). This pre-translation generates natural, correctly stressed Indian-English pronunciations with zero perceivable latency.",
+                        diagram: `graph TD
+    Input[Vani response string] -->|1. Phrase Filter| PhrasePass{longest-phrase matches?}
+    PhrasePass -->|Yes| PhraseReplace[Replace multi-words e.g. koi baat nahi to ko-ee baat na-hi]
+    PhrasePass -->|No| WordPass[Tokenize words]
+    WordPass -->|Anchored Bounds| WordReplace[Replace tokens e.g. actually to ak-chu-lee]
+    WordReplace -->|2. Phonetic output string| TTS[macOS speech process Popen say]`
+                    },
+                    {
+                        q: "How did you build the offline-first sync mechanism in KRIYA using SQLite and AsyncStorage?",
+                        strategy: "Explain the React Native architecture. React Native JS thread -> SQLite storage. Explain the synchronization flow when internet is detected.",
+                        model: "KRIYA was designed as an offline-first productivity app. I used React Native + Expo. For data persistence, instead of making real-time API calls, the app writes all habit completion events, streaks, and user settings immediately into a local SQLite database using React Native's SQLite library. This ensures instant updates and zero UI lag. I also utilized AsyncStorage for rapid key-value caching (like user theme state and token credentials). For synchronization with our cloud DB (when connected), I wrote a sync middleware that captures a timestamp log of offline database modifications. When the net connects, the app syncs the delta changes back to our Supabase database in a background thread, resolving conflicts by using a 'last-write-wins' strategy.",
+                        diagram: `graph TD
+    UI[React Native / Expo UI] -->|1. Habit Completion Event| SQLite[(SQLite local persistence DB)]
+    UI -->|2. Cache configs| Storage[(AsyncStorage key-value cache)]
+    SQLite -->|3. Sync middleware delta logs| Sync{network status?}
+    Sync -->|Offline| Queue[Queue sync delta logs]
+    Sync -->|Online| Cloud[Supabase Cloud PostgreSQL]
+    Cloud -->|Conflict Check| Resolve[Last-Write-Wins Resolving]`
+                    }
+                ]
+            },
+            "3": {
+                name: "Core Technical & CS Fundamentals",
+                subtitle: "Revising databases, operating systems, networking, and security concepts",
+                questions: [
+                    {
+                        q: "What is a JavaScript Closure? Give a practical real-world use case.",
+                        strategy: "Define closure (function bundled with its lexical environment). Practical use: data encapsulation (private variables), custom hooks creation, memoization, currying.",
+                        model: "A closure in JavaScript is a function that remembers and retains access to its outer (lexical) scope even after the outer function has finished executing. A practical, real-world use case is data privacy or state encapsulation. For example, if we want to create a counter function but prevent external code from directly modifying the count variable, we can return an inner function that increments a private variable declared inside the parent function. Another major React-specific application is within React hooks like `useState`, where React maintains access to the component's state across renders using closures."
+                    },
+                    {
+                        q: "How does Database Indexing work? What are B-Trees, and when does indexing slow down queries?",
+                        strategy: "Explain index structure (B-Trees / B+ Trees), fast lookup (O(log N)), when to index, and writing costs (INSERT, UPDATE, DELETE slow downs because index must be updated).",
+                        model: "Database indexing is a data structure technique used to quickly locate and retrieve data from a database table without scanning every single row. Under the hood, relational databases like PostgreSQL use B+ Trees (Balanced Trees) to store index keys. A B+ Tree organizes data in sorted nodes, allowing search, insertion, and deletion in O(log N) time complexity. While indexing speeds up read queries (`SELECT`) significantly, it actually slows down write queries (`INSERT`, `UPDATE`, `DELETE`) because the database engine must rebuild/rebalance the B+ Tree index nodes on every write. Therefore, we should index columns frequently used in `WHERE`, `JOIN`, or `ORDER BY` clauses, but avoid over-indexing tables with extremely high write frequencies."
+                    },
+                    {
+                        q: "Explain the difference between a Process and a Thread, and how Node.js manages concurrency with a single thread.",
+                        strategy: "Explain Process (isolated memory space, heavy) vs Thread (shares process memory, lightweight). Explain Node.js Event Loop, non-blocking I/O, and the libuv thread pool for CPU intensive tasks.",
+                        model: "A Process is an executing instance of a computer program with its own isolated memory space allocated by the OS. A Thread, however, is a lightweight subunit of execution inside a process that shares the parent process's memory space and resources. Node.js is single-threaded, meaning it executes JavaScript code in a single main thread. It achieves high concurrency using an Event Loop and non-blocking asynchronous I/O APIs. When an I/O operation (like a file read or database query) is requested, Node delegates the task to the underlying OS kernel or to its internal 'libuv' worker thread pool. The main thread continues executing JavaScript code. When the asynchronous task completes, it pushes a callback to the queue, which the Event Loop executes, allowing Node to handle thousands of concurrent connections on a single thread."
+                    }
+                ]
+            }
+        };
+
+        // Active State tracking
+        let currentTrack = "1";
+        let activeQuestion = null;
+        let activeStep = 1;
+        
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let isSpeakingPracticeActive = false;
+        
+        let activeRating = 0;
+
+        // Render Questions for active track
+        function renderQuestions() {
+            const listDiv = document.getElementById('questionList');
+            const data = QUESTIONS_DATA[currentTrack];
+            
+            document.getElementById('trackTitle').innerText = data.name;
+            document.getElementById('trackSubtitle').innerText = data.subtitle;
+            
+            listDiv.innerHTML = "";
+            data.questions.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = `question-row ${activeQuestion && activeQuestion.q === item.q ? 'active' : ''}`;
+                row.onclick = () => selectQuestion(item);
+                
+                row.innerHTML = `
+                    <div class="question-title">${idx + 1}. ${item.q}</div>
+                    <div class="question-arrow">→</div>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+
+        // Switch Question Track
+        function switchTrack(trackId) {
+            currentTrack = trackId;
+            activeQuestion = null;
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`nav-track-${trackId}`).classList.add('active');
+            
+            document.getElementById('leftPanelCard').style.display = "flex";
+            document.getElementById('stepperContainer').style.display = "flex";
+            if (document.getElementById('analyticsPanel')) {
+                document.getElementById('analyticsPanel').remove();
+            }
+
+            renderQuestions();
+            resetStepper();
+        }
+
+        // Select specific question
+        function selectQuestion(q) {
+            activeQuestion = q;
+            renderQuestions();
+            
+            // Update Stepper content
+            document.getElementById('step1-q').innerText = q.q;
+            document.getElementById('step2-strategy').innerText = q.strategy;
+            document.getElementById('step3-model').innerText = q.model;
+            
+            // Dynamic diagram parsing & compiling using Mermaid.js
+            const diagramSection = document.getElementById('sysDiagramSection');
+            const mContainer = document.getElementById('mermaidContainer');
+            
+            if (q.diagram) {
+                diagramSection.style.display = "flex";
+                mContainer.removeAttribute('data-processed');
+                mContainer.innerHTML = q.diagram;
+                try {
+                    mermaid.run({ nodes: [mContainer] });
+                } catch (e) {
+                    console.log("Mermaid compile delay: ", e.message);
+                }
+            } else {
+                diagramSection.style.display = "none";
+                mContainer.innerHTML = "";
+            }
+
+            activeStep = 1;
+            updateStepperUI();
+            
+            speakText(q.q);
+        }
+
+        // Stepper Navigation
+        function updateStepperUI() {
+            const stepNames = ["Step 1: The Question", "Step 2: Strategy Corner", "Step 3: Elite Model Answer", "Step 4: Speaking Sandbox"];
+            document.getElementById('stepName').innerText = stepNames[activeStep - 1];
+
+            document.querySelectorAll('.step-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`stepCard-${activeStep}`).classList.add('active');
+
+            document.querySelectorAll('.step-dot').forEach(dot => dot.classList.remove('active'));
+            for (let i = 1; i <= activeStep; i++) {
+                document.getElementById(`dot-${i}`).classList.add('active');
+            }
+
+            document.getElementById('btnPrevStep').disabled = activeStep === 1;
+            document.getElementById('btnNextStep').disabled = !activeQuestion;
+
+            window.speechSynthesis.cancel();
+        }
+
+        function nextStep() {
+            if (activeStep < 4) {
+                activeStep++;
+                updateStepperUI();
+            }
+        }
+
+        function prevStep() {
+            if (activeStep > 1) {
+                activeStep--;
+                updateStepperUI();
+            }
+        }
+
+        function resetStepper() {
+            document.getElementById('step1-q').innerText = "Select a question from the left sidebar to start your interactive prep!";
+            activeStep = 1;
+            updateStepperUI();
+        }
+
+        // TTS Speech Synthesis Engine
+        function speakText(text) {
+            window.speechSynthesis.cancel();
+            
+            const cleanText = text.replace(/[🎙️🤖📌☁️🏠🔥*#`]/g, "");
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Natural')));
+            
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+            utterance.rate = 1.0;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakCurrentQuestion() {
+            if (activeQuestion) speakText(activeQuestion.q);
+        }
+
+        function speakCurrentStrategy() {
+            if (activeQuestion) speakText(activeQuestion.strategy);
+        }
+
+        function speakCurrentModel() {
+            if (activeQuestion) speakText(activeQuestion.model);
+        }
+
+        function copyModelAnswer() {
+            if (activeQuestion) {
+                navigator.clipboard.writeText(activeQuestion.model);
+                alert("Model answer copied to clipboard!");
+            }
+        }
+
+        // Speaking Sandbox Timer
+        function toggleTimer() {
+            const btn = document.getElementById('btnTimerToggle');
+            const visualizer = document.getElementById('visualizer');
+            const assesmentBlock = document.getElementById('selfAssesmentBlock');
+
+            if (!isSpeakingPracticeActive) {
+                isSpeakingPracticeActive = true;
+                btn.innerText = "🛑 Stop practice timer";
+                btn.style.background = "var(--danger)";
+                btn.style.color = "#ffffff";
+                visualizer.classList.add('active');
+                assesmentBlock.style.display = "none";
+                
+                elapsedSeconds = 0;
+                document.getElementById('timer').innerText = "00:00";
+                
+                timerInterval = setInterval(() => {
+                    elapsedSeconds++;
+                    const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+                    const secs = String(elapsedSeconds % 60).padStart(2, '0');
+                    document.getElementById('timer').innerText = `${mins}:${secs}`;
+                }, 1000);
+            } else {
+                isSpeakingPracticeActive = false;
+                btn.innerText = "🎙️ Start speaking practice";
+                btn.style.background = "linear-gradient(135deg, var(--accent-primary), #a290d2)";
+                btn.style.color = "#141518";
+                visualizer.classList.remove('active');
+                clearInterval(timerInterval);
+                
+                assesmentBlock.style.display = "flex";
+            }
+        }
+
+        // Stars self assessment selection
+        function setRating(rating) {
+            activeRating = rating;
+            for (let i = 1; i <= 5; i++) {
+                const star = document.getElementById(`star-${i}`);
+                if (i <= rating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            }
+        }
+
+        // Log session to central DB
+        async function savePracticeSession() {
+            if (!activeQuestion) return;
+
+            const notes = document.getElementById('selfNotes').value;
+            const logData = {
+                question: activeQuestion.q,
+                category: QUESTIONS_DATA[currentTrack].name,
+                duration_seconds: elapsedSeconds,
+                self_rating: activeRating || 3,
+                notes: notes
+            };
+
+            try {
+                const response = await fetch('http://localhost:5001/api/coach/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logData)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert("✔ Practice session successfully logged in shared history!");
+                    document.getElementById('selfNotes').value = "";
+                    setRating(0);
+                    document.getElementById('selfAssesmentBlock').style.display = "none";
+                    document.getElementById('timer').innerText = "00:00";
+                }
+            } catch (err) {
+                alert("⚠️ Error saving practice session to local server backend. Make sure 'node server.js' is running!");
+            }
+        }
+
+        // Switch to Analytics Dashboard tab
+        async function switchTab(tab) {
+            if (tab === 'analytics') {
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('nav-analytics').classList.add('active');
+
+                document.getElementById('leftPanelCard').style.display = "none";
+                document.getElementById('stepperContainer').style.display = "none";
+                
+                if (document.getElementById('analyticsPanel')) {
+                    document.getElementById('analyticsPanel').remove();
+                }
+
+                let history = [];
+                try {
+                    const response = await fetch('http://localhost:5001/api/coach/history');
+                    const data = await response.json();
+                    history = data.history || [];
+                } catch (e) {
+                    console.log("Offline stats simulation fallback active");
+                }
+
+                const analyticsPanel = document.createElement('div');
+                analyticsPanel.id = "analyticsPanel";
+                analyticsPanel.style.flex = "1";
+                analyticsPanel.style.display = "flex";
+                analyticsPanel.style.flexDirection = "column";
+                analyticsPanel.style.gap = "24px";
+                
+                const avgRating = history.length ? (history.reduce((acc, h) => acc + h.self_rating, 0) / history.length).toFixed(2) : "0.00";
+                const totalMins = history.length ? Math.floor(history.reduce((acc, h) => acc + h.duration_seconds, 0) / 60) : 0;
+
+                let tableRows = "";
+                history.reverse().forEach(h => {
+                    const stars = "★".repeat(h.self_rating) + "☆".repeat(5 - h.self_rating);
+                    tableRows += `
+                        <tr>
+                            <td>${h.timestamp}</td>
+                            <td>${h.category}</td>
+                            <td class="text-warning">${stars}</td>
+                            <td>${Math.floor(h.duration_seconds / 60)}m ${h.duration_seconds % 60}s</td>
+                            <td class="text-xs text-muted">${h.notes || "-"}</td>
+                        </tr>
+                    `;
+                });
+
+                analyticsPanel.innerHTML = `
+                    <div class="analytics-grid">
+                        <div class="stat-card">
+                            <span class="brand-subtitle text-muted">Total Attempts</span>
+                            <span class="stat-val">${history.length}</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="brand-subtitle text-muted">Avg Self Rating</span>
+                            <span class="stat-val text-warning">★ ${avgRating}</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="brand-subtitle text-muted">Total Speaking Mins</span>
+                            <span class="stat-val">${totalMins}m</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card flex-column-full flex-full">
+                        <h3 class="section-heading">Practice Session History Log</h3>
+                        <div class="history-container">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Category Track</th>
+                                        <th>Rating Score</th>
+                                        <th>Speaking Time</th>
+                                        <th>Notes & Reflections</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows || `<tr><td colspan="5" class="center-text text-muted">No logs recorded yet. Start practicing to unlock analytic progress grids!</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                document.querySelector('.content-viewport').appendChild(analyticsPanel);
+            }
+        }
+
+        function showFrameworkDetails() {
+            alert("The V.A.N.I. Framework:\n\nV - Vocal Articulation & Clarity (steady 130 WPM, eliminate filler words)\nA - Active Listening & Alignment (confirm parameters, clarify inputs)\nN - Narrative Structuring (STAR structure situation-task-action-result)\nI - Iterative Self-Correction (evaluate note logs, track metrics)");
+        }
+
+        // Initialize view
+        renderQuestions();
+
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log("Browser voices loaded");
+        };
+    </script>
+</body>
+</html>
