@@ -829,11 +829,11 @@ Type a command or ask a question to start. For example:
     <!-- Gemini API Key Modal -->
     <dialog id="apiKeyModal" class="api-key-dialog">
         <div class="dialog-header">
-            <h3 class="dialog-title">🔑 Configure Gemini API Key</h3>
+            <h3 class="dialog-title">🔑 Configure AI Credentials</h3>
             <button class="dialog-close" onclick="closeApiKeyModal()">×</button>
         </div>
         <div class="security-notice">
-            🛡️ <strong>100% Local & Secure:</strong> Your API Key is stored only in your browser's local storage and sent directly to the official Google Gemini SDK. It is never persisted on our databases.
+            🛡️ <strong>100% Local & Secure:</strong> Credentials are stored only in your local browser storage and sent directly to Google SDK or your local Ollama daemon. They are never saved on our servers.
         </div>
         <div class="input-group">
             <label class="input-label" for="userApiKeyInput">Gemini API Key</label>
@@ -842,9 +842,18 @@ Type a command or ask a question to start. For example:
                 <button type="button" class="btn-toggle-visibility" onclick="toggleKeyVisibility()" title="Toggle Visibility">👁️</button>
             </div>
         </div>
-        <div class="dialog-actions">
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="ollamaEndpointInput">Ollama Fallback URL (Local / Tunnel)</label>
+            <div class="input-wrapper">
+                <input type="text" id="ollamaEndpointInput" class="key-input" placeholder="http://localhost:11434" autocomplete="off" style="font-family: inherit;">
+            </div>
+            <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.35; margin-top: 2px;">
+                💡 Defaults to <code>http://localhost:11434</code> locally. For Vercel, run <code>ngrok http 11434</code> on your Mac and paste the secure HTTPS tunnel URL here to keep Qwen active in the cloud!
+            </div>
+        </div>
+        <div class="dialog-actions" style="margin-top: 16px;">
             <button class="btn-dialog btn-dialog-cancel" onclick="closeApiKeyModal()">Cancel</button>
-            <button id="btnClearKey" class="btn-dialog btn-dialog-clear" onclick="clearApiKey()">Clear Key</button>
+            <button id="btnClearKey" class="btn-dialog btn-dialog-clear" onclick="clearApiKey()">Clear All</button>
             <button class="btn-dialog btn-dialog-save" onclick="saveApiKey()">Save</button>
         </div>
     </dialog>
@@ -1044,11 +1053,16 @@ Type a command or ask a question to start. For example:
 
                 try {
                     const userApiKey = localStorage.getItem('abhyas_user_api_key') || '';
+                    const ollamaEndpoint = localStorage.getItem('abhyas_ollama_endpoint') || 'http://localhost:11434';
+                    
                     const headers = { 
                         'Content-Type': 'application/json'
                     };
                     if (userApiKey) {
                         headers['x-api-key'] = userApiKey;
+                    }
+                    if (ollamaEndpoint) {
+                        headers['x-ollama-endpoint'] = ollamaEndpoint;
                     }
 
                     const response = await fetch('/api/abhyas/chat', {
@@ -1287,12 +1301,15 @@ Type a command or ask a question to start. For example:
         // ---------------------------------------------------------------------
         const apiKeyModal = document.getElementById('apiKeyModal');
         const userApiKeyInput = document.getElementById('userApiKeyInput');
+        const ollamaEndpointInput = document.getElementById('ollamaEndpointInput');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
         const btnClearKey = document.getElementById('btnClearKey');
 
         function openApiKeyModal() {
             const currentKey = localStorage.getItem('abhyas_user_api_key') || '';
+            const currentOllama = localStorage.getItem('abhyas_ollama_endpoint') || 'http://localhost:11434';
             userApiKeyInput.value = currentKey;
+            ollamaEndpointInput.value = currentOllama;
             userApiKeyInput.type = 'password';
             document.querySelector('.btn-toggle-visibility').textContent = '👁️';
             

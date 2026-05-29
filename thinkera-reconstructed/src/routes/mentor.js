@@ -4,9 +4,9 @@ const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
 // Asynchronous helper to query local Qwen 2.5:3b model for mentor hints via Ollama
-async function tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt) {
-    console.log("🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model for mentor hints...");
-    const ollamaRes = await fetch('http://localhost:11434/api/chat', {
+async function tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt, ollamaEndpoint = 'http://localhost:11434') {
+    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model for mentor hints at endpoint "${ollamaEndpoint}"...`);
+    const ollamaRes = await fetch(`${ollamaEndpoint}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -57,6 +57,7 @@ Explain my bug and give me a helpful hint without showing me the solution.
 `;
 
     const userApiKey = req.headers['x-api-key'];
+    const ollamaEndpoint = req.headers['x-ollama-endpoint'] || 'http://localhost:11434';
     let activeClient = aiClient;
 
     if (userApiKey) {
@@ -106,7 +107,7 @@ Explain my bug and give me a helpful hint without showing me the solution.
 
         // Attempt Tier 2 Fallback: Local Qwen 2.5:3b via Ollama
         try {
-            const qwenHint = await tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt);
+            const qwenHint = await tryOllamaMentorFallback(code, language, errorContext, systemPrompt, userPrompt, ollamaEndpoint);
             console.log("✔ [MENTOR HINT]: Successfully retrieved local Qwen response!");
             return res.json({
                 hint: `🤖 **[MENTOR HINT - QWEN2.5 LOCAL AI ACTIVE]**\n\n${qwenHint}`

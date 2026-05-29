@@ -4,7 +4,7 @@ const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
 // Asynchronous helper to query local Qwen 2.5:3b model via Ollama
-async function tryOllamaFallback(message, context, history, systemPrompt) {
+async function tryOllamaFallback(message, context, history, systemPrompt, ollamaEndpoint = 'http://localhost:11434') {
     const ollamaMessages = [
         { role: 'system', content: systemPrompt }
     ];
@@ -27,8 +27,8 @@ async function tryOllamaFallback(message, context, history, systemPrompt) {
         content: currentMessageText
     });
 
-    console.log("🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model...");
-    const ollamaRes = await fetch('http://localhost:11434/api/chat', {
+    console.log(`🤖 [OLLAMA FALLBACK]: Querying local qwen2.5:3b model at endpoint "${ollamaEndpoint}"...`);
+    const ollamaRes = await fetch(`${ollamaEndpoint}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,6 +106,7 @@ CORE BEHAVIORAL DIRECTIVES:
     });
 
     const userApiKey = req.headers['x-api-key'];
+    const ollamaEndpoint = req.headers['x-ollama-endpoint'] || 'http://localhost:11434';
     let activeClient = aiClient;
 
     if (userApiKey) {
@@ -145,7 +146,7 @@ CORE BEHAVIORAL DIRECTIVES:
 
         // Attempt Tier 2 Fallback: Local Qwen 2.5:3b via Ollama
         try {
-            const qwenReply = await tryOllamaFallback(message, context, history, systemPrompt);
+            const qwenReply = await tryOllamaFallback(message, context, history, systemPrompt, ollamaEndpoint);
             console.log("✔ [ABHYAS CHAT]: Successfully retrieved local Qwen response!");
             return res.json({
                 reply: `🤖 **[ABHYAS COACH - QWEN2.5 LOCAL AI ACTIVE]**\n\n${qwenReply}`
