@@ -2747,11 +2747,9 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 };
 
                 // Initialize starting states
-                this.currentState = 'walk_down';
+                this.currentState = 'walk_right';
                 this.x = 20;
                 this.y = 20;
-                this.vx = 0.6;
-                this.vy = 0.4;
                 
                 this.angle = 0;
                 this.isDancing = false;
@@ -2767,10 +2765,9 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
 
             randomizeVelocity() {
-                const speed = 0.45 + Math.random() * 0.6; // Snorlax is cute and slow!
-                const angle = Math.random() * Math.PI * 2;
-                this.vx = Math.cos(angle) * speed;
-                this.vy = Math.sin(angle) * speed;
+                const speed = 0.35 + Math.random() * 0.4; // Snorlax is cute and slow!
+                this.vx = (Math.random() < 0.5 ? 1 : -1) * speed;
+                this.vy = 0; // Strictly horizontal
                 this.isDancing = false;
             }
 
@@ -2779,7 +2776,7 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 // eating strawberries, sleeping, punching, or rolling!
                 if (Math.random() < 0.22 && !this.isDancing) {
                     this.isDancing = true;
-                    this.danceTimer = 40 + Math.floor(Math.random() * 60); // 40-100 frames of fun
+                    this.danceTimer = 45 + Math.floor(Math.random() * 50); // 45-95 frames of fun
                     
                     const behaviors = ['eat', 'sleep', 'punch', 'roll'];
                     this.currentState = behaviors[Math.floor(Math.random() * behaviors.length)];
@@ -2846,25 +2843,23 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                         this.characterEl.style.transform = `translateX(${punchLunge}px)`;
                     }
                     
+                    // Position strictly near the bottom of the terminal screen, just above input bar (50px)
+                    this.y = panelH - conf.renderH - 58;
+
                     this.el.style.left = `${this.x}px`;
                     this.el.style.top = `${this.y}px`;
                     return;
                 }
 
-                // Normal movement physics
+                // Normal horizontal movement physics
                 this.x += this.vx;
-                this.y += this.vy;
-
-                // Margins: Snorlax stays in the 80px outer border frame to stay clear of user content
-                const margin = 80;
+                this.y = panelH - conf.renderH - 58;
 
                 // Bounding boxes
                 const minX = 0;
                 const maxX = panelW - conf.renderW;
-                const minY = 0;
-                const maxY = panelH - conf.renderH;
 
-                // Bouncing off outer screen margins
+                // Bouncing off left and right margins of the terminal window
                 if (this.x < minX) {
                     this.x = minX;
                     this.vx = Math.abs(this.vx);
@@ -2875,53 +2870,8 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                     this.onCollide();
                 }
 
-                if (this.y < minY) {
-                    this.y = minY;
-                    this.vy = Math.abs(this.vy);
-                    this.onCollide();
-                } else if (this.y > maxY) {
-                    this.y = maxY;
-                    this.vy = -Math.abs(this.vy);
-                    this.onCollide();
-                }
-
-                // Forbidden center region
-                const forbidMinX = margin;
-                const forbidMaxX = panelW - margin - conf.renderW;
-                const forbidMinY = margin;
-                const forbidMaxY = panelH - margin - conf.renderH;
-
-                // Avoid middle zone completely
-                if (this.x > forbidMinX && this.x < forbidMaxX && this.y > forbidMinY && this.y < forbidMaxY) {
-                    const distToLeft   = this.x - forbidMinX;
-                    const distToRight  = forbidMaxX - this.x;
-                    const distToTop    = this.y - forbidMinY;
-                    const distToBottom = forbidMaxY - this.y;
-
-                    const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-
-                    if (minDist === distToLeft) {
-                        this.x = forbidMinX;
-                        this.vx = -Math.abs(this.vx);
-                    } else if (minDist === distToRight) {
-                        this.x = forbidMaxX;
-                        this.vx = Math.abs(this.vx);
-                    } else if (minDist === distToTop) {
-                        this.y = forbidMinY;
-                        this.vy = -Math.abs(this.vy);
-                    } else {
-                        this.y = forbidMaxY;
-                        this.vy = Math.abs(this.vy);
-                    }
-                    this.onCollide();
-                }
-
                 // Choose walking direction row based on primary direction vector
-                if (Math.abs(this.vx) > Math.abs(this.vy)) {
-                    this.currentState = (this.vx > 0) ? 'walk_right' : 'walk_left';
-                } else {
-                    this.currentState = (this.vy > 0) ? 'walk_down' : 'walk_up';
-                }
+                this.currentState = (this.vx > 0) ? 'walk_right' : 'walk_left';
 
                 // Cute Waddles & hops
                 const waddleAngle = 9 * Math.sin(Date.now() / 150); 
