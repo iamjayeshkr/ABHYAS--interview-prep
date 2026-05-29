@@ -20,4 +20,8 @@ router.get('/assets/sprites/download.png', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../Sprites/download.png'));
 });
 
+router.get('/assets/sprites/snorlax.png', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../../Sprites/Gemini_Generated_Image_ldyxzildyxzildyx.png'));
+});
+
 module.exports = router;

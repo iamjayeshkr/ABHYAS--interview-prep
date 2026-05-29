@@ -583,6 +583,15 @@
 
         .sprite-cat .sprite-character { filter: drop-shadow(0 0 2px rgba(255, 158, 100, 0.4)); }
 
+        .sprite-snorlax .sprite-character {
+            background-image: url('/assets/sprites/snorlax.png?v=transparent');
+            filter: drop-shadow(0 0 3px rgba(45, 120, 150, 0.55));
+        }
+
+        .terminal-sprite.sprite-snorlax {
+            opacity: 0.55;
+        }
+
         /* API Key Toggle Button & Dialog Styling */
         .btn-key-toggle {
             display: flex;
@@ -2203,22 +2212,32 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
 
                 this.characterEl = this.el.querySelector('.sprite-character');
 
-                // Locked to 48px character size
-                this.w = 48;
-                this.h = 48;
+                // Locked to Snorlax layout configuration
+                this.spriteConfig = {
+                    sheetWidth: 1792,
+                    sheetHeight: 2400,
+                    states: {
+                        walk_down:  { y: 0,    h: 159, colW: 149.33, cols: 12, renderW: 68, renderH: 72 },
+                        walk_up:    { y: 159,  h: 179, colW: 149.33, cols: 12, renderW: 68, renderH: 82 },
+                        walk_left:  { y: 338,  h: 178, colW: 149.33, cols: 12, renderW: 68, renderH: 81 },
+                        walk_right: { y: 516,  h: 178, colW: 149.33, cols: 12, renderW: 68, renderH: 81 },
+                        punch:      { y: 694,  h: 202, colW: 256,   cols: 7,  renderW: 96, renderH: 76 },
+                        eat:        { y: 1239, h: 232, colW: 224,   cols: 8,  renderW: 90, renderH: 93 },
+                        sleep:      { y: 1557, h: 241, colW: 224,   cols: 8,  renderW: 90, renderH: 97 },
+                        roll:       { y: 2182, h: 218, colW: 224,   cols: 8,  renderW: 90, renderH: 88 }
+                    }
+                };
+
+                // Initialize starting states
+                this.currentState = 'walk_down';
+                this.x = 20;
+                this.y = 20;
+                this.vx = 0.6;
+                this.vy = 0.4;
                 
-                // Initialize default physics/anim states
-                this.x = 10;
-                this.y = 10;
-                this.vx = 0.8;
-                this.vy = 0.6;
                 this.angle = 0;
                 this.isDancing = false;
                 this.danceTimer = 0;
-                
-                const outfits = [0, 8, 16, 24, 32, 40, 48];
-                this.rowOffset = outfits[Math.floor(Math.random() * outfits.length)];
-                this.dirRow = 2; // Default facing right
                 this.animFrame = 0;
 
                 this.randomizeVelocity();
@@ -2230,37 +2249,56 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }
 
             randomizeVelocity() {
-                const speed = 0.7 + Math.random() * 0.8;
+                const speed = 0.45 + Math.random() * 0.6; // Snorlax is cute and slow!
                 const angle = Math.random() * Math.PI * 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
+                this.isDancing = false;
             }
 
             onCollide() {
-                // When hitting walls or corners, 18% chance to trigger an annoying cute dance!
-                if (Math.random() < 0.18 && !this.isDancing) {
+                // When Snorlax hits walls, 22% chance to stop and do a special cute state:
+                // eating strawberries, sleeping, punching, or rolling!
+                if (Math.random() < 0.22 && !this.isDancing) {
                     this.isDancing = true;
-                    this.danceTimer = 35 + Math.floor(Math.random() * 45); // 35-80 updates
+                    this.danceTimer = 40 + Math.floor(Math.random() * 60); // 40-100 frames of fun
                     
-                    // Select a random outfit and special action row
-                    const outfits = [0, 8, 16, 24, 32, 40, 48];
-                    this.rowOffset = outfits[Math.floor(Math.random() * outfits.length)];
-                    this.dirRow = 4 + Math.floor(Math.random() * 3); // Rows 4, 5, 6 are special actions
+                    const behaviors = ['eat', 'sleep', 'punch', 'roll'];
+                    this.currentState = behaviors[Math.floor(Math.random() * behaviors.length)];
+                    this.animFrame = 0;
                 }
             }
 
             cycleAnimation() {
-                // Cycle walk/dance frames (cols 0, 1, 2)
-                this.animFrame = (this.animFrame + 1) % 3;
-                const posX = -this.animFrame * 48;
-                
-                const posY = -(this.rowOffset + this.dirRow) * 48;
+                const conf = this.spriteConfig.states[this.currentState];
+                if (!conf) return;
 
+                // Cycle frame index
+                this.animFrame = (this.animFrame + 1) % conf.cols;
+
+                // Scale calculations for pixel-perfect dynamic cropping
+                const scale = conf.renderW / conf.colW;
+                const sizeX = this.spriteConfig.sheetWidth * scale;
+                const sizeY = this.spriteConfig.sheetHeight * scale;
+
+                const posX = - (this.animFrame * conf.colW * scale);
+                const posY = - (conf.y * scale);
+
+                // Apply size and background offsets dynamically in JS
+                this.characterEl.style.width = `${conf.renderW}px`;
+                this.characterEl.style.height = `${conf.renderH}px`;
+                this.characterEl.style.backgroundSize = `${sizeX}px ${sizeY}px`;
                 this.characterEl.style.backgroundPosition = `${posX}px ${posY}px`;
+
+                this.el.style.width = `${conf.renderW}px`;
+                this.el.style.height = `${conf.renderH}px`;
             }
 
             update(panelW, panelH) {
-                // Handle dancing state
+                const conf = this.spriteConfig.states[this.currentState];
+                if (!conf) return;
+
+                // Handle dancing/special behaviors
                 if (this.isDancing) {
                     this.danceTimer--;
                     if (this.danceTimer <= 0) {
@@ -2268,29 +2306,44 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                         this.randomizeVelocity();
                     }
                     
-                    // While dancing, apply cute wiggles or spins
-                    this.angle = (this.angle + 15) % 360;
-                    const scale = 1.1 + 0.15 * Math.sin(Date.now() / 80);
-                    this.characterEl.style.transform = `rotate(${this.angle}deg) scale(${scale})`;
+                    // Cute animations based on current behavior state
+                    if (this.currentState === 'sleep') {
+                        // Snorlax is breathing/snoring heavily - scale up/down gently
+                        const snoreScale = 1.0 + 0.08 * Math.sin(Date.now() / 300);
+                        this.characterEl.style.transform = `scale(${snoreScale})`;
+                    } else if (this.currentState === 'roll') {
+                        // Snorlax is spinning in a ball!
+                        this.angle = (this.angle + 20) % 360;
+                        this.characterEl.style.transform = `rotate(${this.angle}deg)`;
+                    } else if (this.currentState === 'eat') {
+                        // Eating strawberries - cute wiggle side-to-side
+                        const eatWiggle = 8 * Math.sin(Date.now() / 100);
+                        this.characterEl.style.transform = `rotate(${eatWiggle}deg)`;
+                    } else if (this.currentState === 'punch') {
+                        // Punching - throw dynamic lunges
+                        const punchLunge = 12 * Math.sin(Date.now() / 80);
+                        this.characterEl.style.transform = `translateX(${punchLunge}px)`;
+                    }
+                    
                     this.el.style.left = `${this.x}px`;
                     this.el.style.top = `${this.y}px`;
                     return;
                 }
 
-                // Apply velocity
+                // Normal movement physics
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Edge margins - keep the sprite strictly in the outer frame (thickness: 75px)
-                const margin = 75; 
-                
-                // Outer boundaries
-                const minX = 0;
-                const maxX = panelW - this.w;
-                const minY = 0;
-                const maxY = panelH - this.h;
+                // Margins: Snorlax stays in the 80px outer border frame to stay clear of user content
+                const margin = 80;
 
-                // Bounce off outer boundary edges
+                // Bounding boxes
+                const minX = 0;
+                const maxX = panelW - conf.renderW;
+                const minY = 0;
+                const maxY = panelH - conf.renderH;
+
+                // Bouncing off outer screen margins
                 if (this.x < minX) {
                     this.x = minX;
                     this.vx = Math.abs(this.vx);
@@ -2311,15 +2364,14 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                     this.onCollide();
                 }
 
-                // Inner forbidden rectangle bounds
+                // Forbidden center region
                 const forbidMinX = margin;
-                const forbidMaxX = panelW - margin - this.w;
+                const forbidMaxX = panelW - margin - conf.renderW;
                 const forbidMinY = margin;
-                const forbidMaxY = panelH - margin - this.h;
+                const forbidMaxY = panelH - margin - conf.renderH;
 
-                // Check collision with the middle screen (avoid disturbing user)
+                // Avoid middle zone completely
                 if (this.x > forbidMinX && this.x < forbidMaxX && this.y > forbidMinY && this.y < forbidMaxY) {
-                    // Push out to the nearest safe edge and bounce
                     const distToLeft   = this.x - forbidMinX;
                     const distToRight  = forbidMaxX - this.x;
                     const distToTop    = this.y - forbidMinY;
@@ -2343,21 +2395,19 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                     this.onCollide();
                 }
 
-                // Waddling animation angle + subtle jump heights to make it look active & adorable
-                const waddleAngle = 14 * Math.sin(Date.now() / 120); 
-                const hopY = -5 * Math.abs(Math.sin(Date.now() / 90)); 
-                
-                // Set directional sprite row based on primary direction vector
+                // Choose walking direction row based on primary direction vector
                 if (Math.abs(this.vx) > Math.abs(this.vy)) {
-                    this.dirRow = (this.vx > 0) ? 2 : 1; // 2=Right, 1=Left
+                    this.currentState = (this.vx > 0) ? 'walk_right' : 'walk_left';
                 } else {
-                    this.dirRow = (this.vy > 0) ? 0 : 3; // 0=Down, 3=Up
+                    this.currentState = (this.vy > 0) ? 'walk_down' : 'walk_up';
                 }
 
-                // Apply dynamic transforms and offsets
+                // Cute Waddles & hops
+                const waddleAngle = 9 * Math.sin(Date.now() / 150); 
+                const hopY = -4 * Math.abs(Math.sin(Date.now() / 100)); 
+
                 this.characterEl.style.transform = `translateY(${hopY}px) rotate(${waddleAngle}deg)`;
 
-                // Render position styles
                 this.el.style.left = `${this.x}px`;
                 this.el.style.top = `${this.y}px`;
             }
@@ -2368,7 +2418,7 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             const terminalPanel = document.querySelector('.terminal-panel');
             if (!terminalPanel) return;
 
-            const backgroundSprite = new TerminalSprite(terminalPanel, 'sprite-cat');
+            const backgroundSprite = new TerminalSprite(terminalPanel, 'sprite-snorlax');
 
             // Simple cyclic animation loop
             function animate() {
