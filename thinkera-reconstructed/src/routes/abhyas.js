@@ -112,9 +112,10 @@ Your primary directive is to help Jayesh prepare for premium technical and behav
 
 CORE BEHAVIORAL DIRECTIVES:
 
-1. HINGLISH DIALOGUE (NATURAL & COMFORTABLE):
+1. HINGLISH DIALOGUE (NATURAL & COMFORTABLE - MASCULINE PERSONA):
    - Speak in a natural, comfortable, and professional mix of Hindi and English (Hinglish), just like top tech engineers communicate.
-   - Use Hindi phrasing for explanations, analogies, and encouragement, while keeping standard technical terms in English (e.g., "Bilkul Jayesh, closures ka concept main aapko interactive way mein samjhati hoon. Jab ek function apne outer lexical scope ko remember rakhta hai, use hum closure bolte hain...").
+   - Speak in a supportive, professional MASCULINE (male) tone (e.g., use "sakta hoon", "samjhata hoon", "karta hoon" instead of feminine variants like "sakti hoon", "samjhati hoon", "karti hoon").
+   - Use Hindi phrasing for explanations, analogies, and encouragement, while keeping standard technical terms in English (e.g., "Bilkul Jayesh, closures ka concept main aapko interactive way mein samjhata hoon. Jab ek function apne outer lexical scope ko remember rakhta hai, use hum closure bolte hain...").
 
 2. INTERVIEW READINESS SCORING:
    - When Jayesh answers a mock question, gives a pitch, or explains an architecture, evaluate it thoroughly.
@@ -237,13 +238,13 @@ CORE BEHAVIORAL DIRECTIVES:
         if (isQuotaExceeded || isKeyInvalid) {
             console.log("ℹ [ABHYAS CHAT]: API Key has quota limits or is invalid. Engaging intelligent simulated fallback.");
 
-            let explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki aapka Gemini API Key currently **Rate Limited (429 Quota Exceeded)** hai, ya is key par free-tier requests block hain (Limit: 0).";
+            let explanation = "Main aapke queries ko capture kar paa raha hoon! Lekin aesa lagta hai ki aapka Gemini API Key currently **Rate Limited (429 Quota Exceeded)** hai, ya is key par free-tier requests block hain (Limit: 0).";
             if (isKeyInvalid) {
-                explanation = "Main aapke queries ko capture kar paa rahi hoon! Lekin aesa lagta hai ki jo Gemini API Key enter kiya gaya hai, woh **Invalid** hai ya active nahi hai.";
+                explanation = "Main aapke queries ko capture kar paa raha hoon! Lekin aesa lagta hai ki jo Gemini API Key enter kiya gaya hai, woh **Invalid** hai ya active nahi hai.";
             }
 
             return res.json({
-                reply: `🤖 **[ABHYAS COACH - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: ${explanation} (Hum yahan temporary simulated coaching mode mein run kar rahe hain taaki aapki preparation halt na ho!)\n\n💡 Tip: Aap settings modal 🔑 mein **OpenRouter API Key** bhi configure kar sakte hain taaki quota limits par automatic cloud fallback active rahe!*\n\n---\n\nBilkul! Main aapki help karti hoon. Aapne poocha: "${message}". \n\nClosures, indexing, or system queries ho — jab bhi hum Gemini API constraints encounter karte hain, ABHYAS intelligent simulations provide karti hai.\n\n### 💡 Key Concept Highlight:\n1. **Lexical Scopes & Closures**: In JS, functions nested inside outer functions always hold on to the variables of their parent context, forming a closure.\n2. **Star Method Behavioral Prep**: Use Situation, Task, Action, Result to anchor your behavioral answers.\n\nBatao Jayesh, aap is question ka mock answer try karna chahte ho? Write it down here, and main use evaluate karke aapko readiness rating doongi!`
+                reply: `🤖 **[ABHYAS COACH - RESILIENT FALLBACK MODE]**\n\n*⚠️ Note: ${explanation} (Hum yahan temporary simulated coaching mode mein run kar rahe hain taaki aapki preparation halt na ho!)\n\n💡 Tip: Aap settings modal 🔑 mein **OpenRouter API Key** bhi configure kar sakte hain taaki quota limits par automatic cloud fallback active rahe!*\n\n---\n\nBilkul! Main aapki help karta hoon. Aapne poocha: "${message}". \n\nClosures, indexing, or system queries ho — jab bhi hum Gemini API constraints encounter karte hain, ABHYAS intelligent simulations provide karta hai.\n\n### 💡 Key Concept Highlight:\n1. **Lexical Scopes & Closures**: In JS, functions nested inside outer functions always hold on to the variables of their parent context, forming a closure.\n2. **Star Method Behavioral Prep**: Use Situation, Task, Action, Result to anchor your behavioral answers.\n\nBatao Jayesh, aap is question ka mock answer try karna chahte ho? Write it down here, and main use evaluate karke aapko readiness rating doonga!`
             });
         }
 
