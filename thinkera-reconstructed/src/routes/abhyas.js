@@ -32,8 +32,9 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
     });
 
     const candidateModels = [
+        'meta-llama/llama-3.1-8b-instruct:free',
+        'meta-llama/llama-3.1-8b-instruct',
         'qwen/qwen-2.5-coder-32b-instruct:free',
-        'meta-llama/llama-3-8b-instruct:free',
         'google/gemma-2-9b-it:free',
         'openrouter/free'
     ];
