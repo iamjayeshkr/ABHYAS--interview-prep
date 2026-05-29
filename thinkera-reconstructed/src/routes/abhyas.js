@@ -3,7 +3,24 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Asynchronous helper to query cloud models via OpenRouter with resilient model candidate cascade
+// Helper to execute fetch calls with strict abort timeouts to prevent slow model queue delays
+async function fetchWithTimeout(url, options, timeoutMs = 2000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+    } catch (err) {
+        clearTimeout(id);
+        throw err;
+    }
+}
+
+// Asynchronous helper to query cloud models via OpenRouter with a blazing-fast, timed candidate cascade
 async function tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey) {
     if (!openRouterKey) {
         throw new Error("No OpenRouter Key provided.");
@@ -31,9 +48,11 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
         content: currentMessageText
     });
 
+    // Blazing-fast prioritization: Paid Llama 3.1 8B Instruct is placed at the top for sub-second, highly throughput-driven execution
     const candidateModels = [
-        'meta-llama/llama-3.3-70b-instruct:free',
+        'meta-llama/llama-3.1-8b-instruct',
         'meta-llama/llama-3.2-3b-instruct:free',
+        'meta-llama/llama-3.3-70b-instruct:free',
         'deepseek/deepseek-v4-flash:free',
         'qwen/qwen3-coder:free',
         'openrouter/free'
@@ -43,7 +62,7 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
     for (const model of candidateModels) {
         try {
             console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud model "${model}"...`);
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -56,7 +75,7 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
                     messages: messages,
                     stream: false
                 })
-            });
+            }, 2000); // Strict 2-second timeout per candidate!
 
             if (!response.ok) {
                 const errorText = await response.text();
