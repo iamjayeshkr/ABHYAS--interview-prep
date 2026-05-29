@@ -48,13 +48,11 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
         content: currentMessageText
     });
 
-    // Blazing-fast 100% free prioritization: Lightweight Llama 3.2 3B Instruct free model is placed at the top for high-speed free execution
+    // Prioritize openrouter/free first for instant auto-routing to the fastest free model, with resilient backups
     const candidateModels = [
+        'openrouter/free',
         'meta-llama/llama-3.2-3b-instruct:free',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'deepseek/deepseek-v4-flash:free',
-        'qwen/qwen3-coder:free',
-        'openrouter/free'
+        'qwen/qwen3-coder:free'
     ];
 
     let lastError = null;
