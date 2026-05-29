@@ -3,42 +3,66 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Asynchronous helper to query cloud Qwen 2.5:3b model for mentor hints via OpenRouter
+// Asynchronous helper to query cloud models via OpenRouter with resilient model candidate cascade for mentor hints
 async function tryOpenRouterMentorFallback(code, language, errorContext, systemPrompt, userPrompt, openRouterKey) {
     if (!openRouterKey) {
         throw new Error("No OpenRouter Key provided.");
     }
 
-    console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud qwen-2.5-3b-instruct model for mentor hints...`);
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openRouterKey.trim()}`,
-            'HTTP-Referer': 'http://localhost:5001',
-            'X-Title': 'ThinkEra DSA Mentor'
-        },
-        body: JSON.stringify({
-            model: 'qwen/qwen-2.5-3b-instruct:free',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            stream: false
-        })
-    });
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+    ];
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`OpenRouter API HTTP Error: ${response.status} - ${errorText}`);
+    const candidateModels = [
+        'qwen/qwen-2.5-coder-32b-instruct:free',
+        'meta-llama/llama-3-8b-instruct:free',
+        'google/gemma-2-9b-it:free',
+        'openrouter/free'
+    ];
+
+    let lastError = null;
+    for (const model of candidateModels) {
+        try {
+            console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud model "${model}" for mentor hints...`);
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openRouterKey.trim()}`,
+                    'HTTP-Referer': 'http://localhost:5001',
+                    'X-Title': 'ThinkEra DSA Mentor'
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: messages,
+                    stream: false
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(`API Error: ${JSON.stringify(data.error)}`);
+            }
+            if (!data.choices || data.choices.length === 0) {
+                throw new Error("Returned empty choices.");
+            }
+
+            return {
+                content: data.choices[0].message.content,
+                modelUsed: model
+            };
+        } catch (err) {
+            console.warn(`⚠️ [OPENROUTER CLOUD FALLBACK]: Attempt with "${model}" failed:`, err.message);
+            lastError = err;
+        }
     }
-
-    const data = await response.json();
-    if (!data.choices || data.choices.length === 0) {
-        throw new Error("OpenRouter returned empty choices or response format issue.");
-    }
-
-    return data.choices[0].message.content;
+    throw lastError || new Error("All OpenRouter cloud candidate models failed.");
 }
 
 router.post('/hint', async (req, res) => {
@@ -119,13 +143,13 @@ Explain my bug and give me a helpful hint without showing me the solution.
     } catch (err) {
         console.error("❌ Gemini API Error in Mentor Hint:", err.message);
 
-        // Attempt Tier 2 Fallback: Cloud Qwen 2.5:3b via OpenRouter
+        // Attempt Tier 2 Fallback: Cloud OpenRouter Cascade Fallback
         if (openRouterKey) {
             try {
-                const qwenHint = await tryOpenRouterMentorFallback(code, language, errorContext, systemPrompt, userPrompt, openRouterKey);
-                console.log("✔ [MENTOR HINT]: Successfully retrieved cloud OpenRouter Qwen response!");
+                const { content, modelUsed } = await tryOpenRouterMentorFallback(code, language, errorContext, systemPrompt, userPrompt, openRouterKey);
+                console.log(`✔ [MENTOR HINT]: Successfully retrieved cloud OpenRouter response using ${modelUsed}!`);
                 return res.json({
-                    hint: `🤖 **[MENTOR HINT - QWEN2.5 CLOUD FALLBACK ACTIVE]**\n\n${qwenHint}`
+                    hint: `🤖 **[MENTOR HINT - CLOUD FALLBACK ACTIVE (${modelUsed})]**\n\n${content}`
                 });
             } catch (openRouterErr) {
                 console.warn("⚠️ [MENTOR HINT]: Cloud OpenRouter fallback failed:", openRouterErr.message);

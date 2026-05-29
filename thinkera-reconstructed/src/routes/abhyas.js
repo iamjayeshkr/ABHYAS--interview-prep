@@ -3,7 +3,7 @@ const router = express.Router();
 const { GoogleGenAI } = require('@google/genai');
 const { aiClient } = require('../config/ai');
 
-// Asynchronous helper to query cloud Qwen 2.5:3b or other models via OpenRouter
+// Asynchronous helper to query cloud models via OpenRouter with resilient model candidate cascade
 async function tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey) {
     if (!openRouterKey) {
         throw new Error("No OpenRouter Key provided.");
@@ -31,33 +31,55 @@ async function tryOpenRouterFallback(message, context, history, systemPrompt, op
         content: currentMessageText
     });
 
-    console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud qwen-2.5-3b-instruct model...`);
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openRouterKey.trim()}`,
-            'HTTP-Referer': 'http://localhost:5001',
-            'X-Title': 'ABHYAS Prep Terminal'
-        },
-        body: JSON.stringify({
-            model: 'qwen/qwen-2.5-3b-instruct:free',
-            messages: messages,
-            stream: false
-        })
-    });
+    const candidateModels = [
+        'qwen/qwen-2.5-coder-32b-instruct:free',
+        'meta-llama/llama-3-8b-instruct:free',
+        'google/gemma-2-9b-it:free',
+        'openrouter/free'
+    ];
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`OpenRouter API HTTP Error: ${response.status} - ${errorText}`);
+    let lastError = null;
+    for (const model of candidateModels) {
+        try {
+            console.log(`🤖 [OPENROUTER CLOUD FALLBACK]: Querying cloud model "${model}"...`);
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${openRouterKey.trim()}`,
+                    'HTTP-Referer': 'http://localhost:5001',
+                    'X-Title': 'ABHYAS Prep Terminal'
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: messages,
+                    stream: false
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP Error: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                throw new Error(`API Error: ${JSON.stringify(data.error)}`);
+            }
+            if (!data.choices || data.choices.length === 0) {
+                throw new Error("Returned empty choices.");
+            }
+
+            return {
+                content: data.choices[0].message.content,
+                modelUsed: model
+            };
+        } catch (err) {
+            console.warn(`⚠️ [OPENROUTER CLOUD FALLBACK]: Attempt with "${model}" failed:`, err.message);
+            lastError = err;
+        }
     }
-
-    const data = await response.json();
-    if (!data.choices || data.choices.length === 0) {
-        throw new Error("OpenRouter returned empty choices or response format issue.");
-    }
-
-    return data.choices[0].message.content;
+    throw lastError || new Error("All OpenRouter cloud candidate models failed.");
 }
 
 router.post('/chat', async (req, res) => {
@@ -158,13 +180,13 @@ CORE BEHAVIORAL DIRECTIVES:
     } catch (err) {
         console.error("❌ Gemini API Error in ABHYAS Chat:", err.message);
 
-        // Attempt Tier 2 Fallback: Cloud Qwen 2.5:3b via OpenRouter
+        // Attempt Tier 2 Fallback: Cloud OpenRouter Cascade Fallback
         if (openRouterKey) {
             try {
-                const qwenReply = await tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey);
-                console.log("✔ [ABHYAS CHAT]: Successfully retrieved cloud OpenRouter Qwen response!");
+                const { content, modelUsed } = await tryOpenRouterFallback(message, context, history, systemPrompt, openRouterKey);
+                console.log(`✔ [ABHYAS CHAT]: Successfully retrieved cloud OpenRouter response using ${modelUsed}!`);
                 return res.json({
-                    reply: `🤖 **[ABHYAS COACH - QWEN2.5 CLOUD FALLBACK ACTIVE]**\n\n${qwenReply}`
+                    reply: `🤖 **[ABHYAS COACH - CLOUD FALLBACK ACTIVE (${modelUsed})]**\n\n${content}`
                 });
             } catch (openRouterErr) {
                 console.warn("⚠️ [ABHYAS CHAT]: Cloud OpenRouter fallback failed:", openRouterErr.message);
