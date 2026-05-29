@@ -835,6 +835,134 @@
             }
         }
 
+        /* 🍔 Sleek Glassmorphic Hamburger Dropdown Styles */
+        .btn-hamburger {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 38px;
+            height: 38px;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(124, 98, 238, 0.05);
+            outline: none;
+        }
+        
+        .btn-hamburger:hover {
+            background: rgba(138, 118, 233, 0.08);
+            border-color: var(--accent-primary);
+            transform: scale(1.04);
+        }
+        
+        .hamburger-bar {
+            width: 20px;
+            height: 2px;
+            background: var(--text-main);
+            border-radius: 2px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Active Hamburger (Transforms into X) */
+        .btn-hamburger.active .bar-1 {
+            transform: translateY(7px) rotate(45deg);
+        }
+        
+        .btn-hamburger.active .bar-2 {
+            opacity: 0;
+            transform: scale(0);
+        }
+        
+        .btn-hamburger.active .bar-3 {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Glassmorphic Dropdown Panel */
+        .hamburger-dropdown-panel {
+            position: absolute;
+            top: 66px;
+            right: 24px;
+            width: 260px;
+            background: rgba(255, 255, 252, 0.85); /* Frosted cream theme */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 20px 40px rgba(61, 59, 56, 0.15), 
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            display: none; /* Controlled dynamically by JS */
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+            transform-origin: top right;
+            animation: hamburgerReveal 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes hamburgerReveal {
+            from {
+                opacity: 0;
+                transform: translateY(-10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .hamburger-menu-status {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--success);
+            background: rgba(107, 179, 145, 0.08);
+            border: 1px solid rgba(107, 179, 145, 0.15);
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .hamburger-menu-links {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hamburger-menu-item {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .hamburger-menu-item:hover {
+            background: rgba(138, 118, 233, 0.08);
+            border-color: rgba(138, 118, 233, 0.15);
+            color: var(--accent-primary);
+            transform: translateX(2px);
+        }
+
         /* Cute Background Animated Terminal Sprite (Retro Spritesheet Theme) */
         .terminal-sprite {
             position: absolute;
@@ -1424,20 +1552,34 @@
 
     <header>
         <div class="logo">🎯 ABHYAS <span>Prep Terminal</span></div>
-        <div class="header-actions">
-            <button id="apiKeyBtn" class="btn-key-toggle" onclick="openApiKeyModal()">
-                🔑 <span class="btn-text">Set API Key</span>
+        <div class="header-actions" style="position: relative;">
+            <!-- Sleek Hamburger Menu Toggle Button -->
+            <button id="hamburgerBtn" class="btn-hamburger" onclick="toggleHamburgerMenu()" aria-label="Toggle Menu">
+                <div class="hamburger-bar bar-1"></div>
+                <div class="hamburger-bar bar-2"></div>
+                <div class="hamburger-bar bar-3"></div>
             </button>
-            <button id="contextToggleBtn" class="btn-context-toggle" onclick="toggleContext()">
-                📂 <span class="btn-text">Context Deck</span>
-            </button>
-            <button id="guideBtn" class="btn-dev-toggle" style="color: #b45309; background: rgba(180, 83, 9, 0.08); border-color: rgba(180, 83, 9, 0.25);" onclick="openGuideModal()">
-                📖 <span class="btn-text">API Guide</span>
-            </button>
-            <button id="devProfileBtn" class="btn-dev-toggle" onclick="openDevModal()">
-                👨‍💻 <span class="btn-text">About Me</span>
-            </button>
-            <div class="status-pill">● <span class="status-text">Offline Assistant Synchronized</span></div>
+            
+            <!-- Glassmorphic Dropdown Panel -->
+            <div id="hamburgerMenu" class="hamburger-dropdown-panel">
+                <div class="hamburger-menu-status">
+                    ● <span class="status-text">Offline Assistant Synchronized</span>
+                </div>
+                <div class="hamburger-menu-links">
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('apiKey')">
+                        🔑 Set API Key
+                    </button>
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('context')">
+                        📂 Context Deck
+                    </button>
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('guide')">
+                        📖 API Guide
+                    </button>
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('about')">
+                        👨‍💻 About Me
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -3135,6 +3277,38 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             }, 800);
         }
 
+        // 🍔 Sleek Hamburger Menu Dropdown Controllers
+        function toggleHamburgerMenu() {
+            const menu = document.getElementById('hamburgerMenu');
+            const btn = document.getElementById('hamburgerBtn');
+            if (!menu || !btn) return;
+            
+            const isOpen = menu.style.display === 'flex';
+            if (isOpen) {
+                menu.style.display = 'none';
+                btn.classList.remove('active');
+            } else {
+                menu.style.display = 'flex';
+                btn.classList.add('active');
+            }
+        }
+
+        function handleHamburgerAction(action) {
+            // Close menu first
+            toggleHamburgerMenu();
+            
+            // Execute respective callback
+            if (action === 'apiKey') {
+                openApiKeyModal();
+            } else if (action === 'context') {
+                toggleContext();
+            } else if (action === 'guide') {
+                openGuideModal();
+            } else if (action === 'about') {
+                openDevModal();
+            }
+        }
+
         const devModal = document.getElementById('devModal');
         function openDevModal() {
             if (devModal) devModal.showModal();
@@ -3535,27 +3709,52 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             const hasOpenRouter = !!localStorage.getItem('abhyas_user_openrouter_key');
             const count = [hasGroq, hasGemini, hasCerebras, hasOpenRouter].filter(Boolean).length;
 
-            if (count >= 2) {
-                apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">${count} Providers Active</span>`;
-            } else if (hasGroq) {
-                apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `⚡ <span class="btn-text">Groq Active</span>`;
-            } else if (hasGemini) {
-                apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `✨ <span class="btn-text">Gemini Active</span>`;
-            } else if (hasCerebras || hasOpenRouter) {
-                apiKeyBtn.classList.add('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Cloud Active</span>`;
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const menuStatus = document.querySelector('.hamburger-menu-status');
+
+            if (count > 0) {
+                if (hamburgerBtn) hamburgerBtn.classList.add('has-key');
+                if (menuStatus) {
+                    menuStatus.style.color = 'var(--accent-primary)';
+                    menuStatus.style.background = 'rgba(138, 118, 233, 0.08)';
+                    menuStatus.style.borderColor = 'rgba(138, 118, 233, 0.2)';
+                    
+                    if (count >= 2) {
+                        menuStatus.innerHTML = `● ${count} Cloud Providers Active`;
+                    } else if (hasGroq) {
+                        menuStatus.innerHTML = `● Groq Active`;
+                    } else if (hasGemini) {
+                        menuStatus.innerHTML = `● Gemini Active`;
+                    } else {
+                        menuStatus.innerHTML = `● Cloud APIs Active`;
+                    }
+                }
             } else {
-                apiKeyBtn.classList.remove('has-key');
-                apiKeyBtn.innerHTML = `🔑 <span class="btn-text">Set API Keys</span>`;
+                if (hamburgerBtn) hamburgerBtn.classList.remove('has-key');
+                if (menuStatus) {
+                    menuStatus.style.color = 'var(--success)';
+                    menuStatus.style.background = 'rgba(107, 179, 145, 0.08)';
+                    menuStatus.style.borderColor = 'rgba(107, 179, 145, 0.15)';
+                    menuStatus.innerHTML = `● Offline Assistant Synchronized`;
+                }
             }
         }
 
         // Initialize API key button state and voice choices on load
         window.addEventListener('DOMContentLoaded', () => {
             updateApiKeyBtnState();
+            
+            // Close hamburger dropdown on click outside
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('hamburgerMenu');
+                const btn = document.getElementById('hamburgerBtn');
+                if (menu && btn && menu.style.display === 'flex') {
+                    if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                        menu.style.display = 'none';
+                        btn.classList.remove('active');
+                    }
+                }
+            });
             
             // Set initial selected values for TTS elements on page load
             const currentProvider = localStorage.getItem('abhyas_tts_provider') || 'local';
