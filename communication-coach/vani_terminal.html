@@ -1567,7 +1567,13 @@
                 </div>
                 <div class="hamburger-menu-links">
                     <button class="hamburger-menu-item" onclick="handleHamburgerAction('apiKey')">
-                        🔑 Set API Key
+                        🔑 AI Credentials
+                    </button>
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('voice')">
+                        🗣️ Voice & Speech
+                    </button>
+                    <button class="hamburger-menu-item" onclick="handleHamburgerAction('language')">
+                        🌐 Response Language
                     </button>
                     <button class="hamburger-menu-item" onclick="handleHamburgerAction('context')">
                         📂 Context Deck
@@ -1939,9 +1945,10 @@ Example prompts:
     </dialog>
 
     <!-- Gemini API Key Modal -->
+    <!-- AI Provider Credentials Modal -->
     <dialog id="apiKeyModal" class="api-key-dialog">
         <div class="dialog-header">
-            <h3 class="dialog-title">🔑 Configure AI Credentials</h3>
+            <h3 class="dialog-title">🔑 Configure LLM Credentials</h3>
             <button class="dialog-close" onclick="closeApiKeyModal()">×</button>
         </div>
         <div class="security-notice">
@@ -1995,9 +2002,22 @@ Example prompts:
                 11+ free models. Used only when all other providers fail. Free at <strong>openrouter.ai</strong>.
             </div>
         </div>
-        <!-- 🎙️ PREMIUM NATURAL VOICES (Optional Cloud Upgrade) -->
-        <div style="border-top: 1px dashed var(--border-color); margin-top: 16px; padding-top: 12px; font-weight: 700; font-size: 13px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
-            🎙️ Premium Voice Credentials (Optional)
+
+        <div class="dialog-actions" style="margin-top: 16px;">
+            <button class="btn-dialog btn-dialog-cancel" onclick="closeApiKeyModal()">Cancel</button>
+            <button id="btnClearKey" class="btn-dialog btn-dialog-clear" onclick="clearApiKey()">Clear All</button>
+            <button class="btn-dialog btn-dialog-save" onclick="saveApiKey()">Save</button>
+        </div>
+    </dialog>
+
+    <!-- Voice & Speech Settings Modal -->
+    <dialog id="voiceSettingsModal" class="api-key-dialog">
+        <div class="dialog-header">
+            <h3 class="dialog-title">🗣️ Voice & Speech Settings</h3>
+            <button class="dialog-close" onclick="closeVoiceSettingsModal()">×</button>
+        </div>
+        <div class="security-notice">
+            🎙️ <strong>Natural Speech Integrations:</strong> Enhance the interview coaching experience with state-of-the-art synthetic or cloned voices!
         </div>
 
         <!-- OPENAI API Key (for lifelike voices) -->
@@ -2053,6 +2073,23 @@ Example prompts:
             </div>
         </div>
 
+        <div class="dialog-actions" style="margin-top: 16px;">
+            <button class="btn-dialog btn-dialog-cancel" onclick="closeVoiceSettingsModal()">Cancel</button>
+            <button id="btnClearVoice" class="btn-dialog btn-dialog-clear" onclick="clearVoiceSettings()">Clear All</button>
+            <button class="btn-dialog btn-dialog-save" onclick="saveVoiceSettings()">Save</button>
+        </div>
+    </dialog>
+
+    <!-- Language Preferences Modal -->
+    <dialog id="languageSettingsModal" class="api-key-dialog">
+        <div class="dialog-header">
+            <h3 class="dialog-title">🌐 Language Preferences</h3>
+            <button class="dialog-close" onclick="closeLanguageSettingsModal()">×</button>
+        </div>
+        <div class="security-notice">
+            🗣️ <strong>Multilingual Assistant:</strong> Configure the tone and response language style for your coaching session!
+        </div>
+
         <!-- Language Preference Selector -->
         <div class="input-group" style="margin-top: 8px;">
             <label class="input-label" for="ttsLanguageSelect">Language Model Response Style</label>
@@ -2061,6 +2098,15 @@ Example prompts:
                 <option value="english">🇬🇧 Pure English</option>
                 <option value="hindi">🇮🇳 Pure Hindi</option>
                 <option value="custom">✍️ Custom / Other Language...</option>
+            </select>
+        </div>
+
+        <!-- Speaker On/Off Preference -->
+        <div class="input-group" style="margin-top: 8px;">
+            <label class="input-label" for="autoSpeakSelect">🔊 Auto-Speak Response (Speaker)</label>
+            <select id="autoSpeakSelect" class="key-input" style="padding: 8px 12px; font-family: inherit; font-size: 12.5px; border-radius: 8px; appearance: auto;">
+                <option value="true">🔊 Always On (Speak coaching responses)</option>
+                <option value="false">🔇 Always Off (Text-only responses)</option>
             </select>
         </div>
 
@@ -2076,9 +2122,9 @@ Example prompts:
         </div>
 
         <div class="dialog-actions" style="margin-top: 16px;">
-            <button class="btn-dialog btn-dialog-cancel" onclick="closeApiKeyModal()">Cancel</button>
-            <button id="btnClearKey" class="btn-dialog btn-dialog-clear" onclick="clearApiKey()">Clear All</button>
-            <button class="btn-dialog btn-dialog-save" onclick="saveApiKey()">Save</button>
+            <button class="btn-dialog btn-dialog-cancel" onclick="closeLanguageSettingsModal()">Cancel</button>
+            <button id="btnClearLanguage" class="btn-dialog btn-dialog-clear" onclick="clearLanguageSettings()">Reset</button>
+            <button class="btn-dialog btn-dialog-save" onclick="saveLanguageSettings()">Save</button>
         </div>
     </dialog>
 
@@ -3129,6 +3175,8 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
         // Gemini, OpenRouter, OpenAI, and ElevenLabs API Key Dialog Handlers
         // ---------------------------------------------------------------------
         const apiKeyModal = document.getElementById('apiKeyModal');
+        const voiceSettingsModal = document.getElementById('voiceSettingsModal');
+        const languageSettingsModal = document.getElementById('languageSettingsModal');
         const userApiKeyInput = document.getElementById('userApiKeyInput');
         const openRouterKeyInput = document.getElementById('openRouterKeyInput');
         const groqKeyInput = document.getElementById('groqKeyInput');
@@ -3140,6 +3188,7 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
         const ttsCustomVoiceInput = document.getElementById('ttsCustomVoiceInput');
         const ttsCustomVoiceInputGroup = document.getElementById('ttsCustomVoiceInputGroup');
         const ttsLanguageSelect = document.getElementById('ttsLanguageSelect');
+        const autoSpeakSelect = document.getElementById('autoSpeakSelect');
         const ttsCustomLanguageInput = document.getElementById('ttsCustomLanguageInput');
         const ttsCustomLanguageInputGroup = document.getElementById('ttsCustomLanguageInputGroup');
         const apiKeyBtn = document.getElementById('apiKeyBtn');
@@ -3300,6 +3349,10 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             // Execute respective callback
             if (action === 'apiKey') {
                 openApiKeyModal();
+            } else if (action === 'voice') {
+                openVoiceSettingsModal();
+            } else if (action === 'language') {
+                openLanguageSettingsModal();
             } else if (action === 'context') {
                 toggleContext();
             } else if (action === 'guide') {
@@ -3322,18 +3375,59 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             const currentOpenRouter = localStorage.getItem('abhyas_user_openrouter_key') || '';
             const currentGroq       = localStorage.getItem('abhyas_user_groq_key') || '';
             const currentCerebras   = localStorage.getItem('abhyas_user_cerebras_key') || '';
-            const currentOpenAI     = localStorage.getItem('abhyas_user_openai_key') || '';
-            const currentEleven     = localStorage.getItem('abhyas_user_eleven_key') || '';
-            const currentProvider   = localStorage.getItem('abhyas_tts_provider') || 'local';
-            const currentLanguage   = localStorage.getItem('abhyas_language_pref') || 'hinglish';
 
             userApiKeyInput.value    = currentGemini;
             openRouterKeyInput.value = currentOpenRouter;
             groqKeyInput.value       = currentGroq;
             cerebrasKeyInput.value   = currentCerebras;
+
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.type = 'password');
+            ['btnToggleGeminiVisibility','btnToggleOpenRouterVisibility','btnToggleGroqVisibility','btnToggleCerebrasVisibility']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '👁️';
+                });
+
+            document.getElementById('btnClearKey').style.display = (currentGemini || currentOpenRouter || currentGroq || currentCerebras) ? 'block' : 'none';
+            
+            apiKeyModal.showModal();
+        }
+
+        function closeApiKeyModal() {
+            apiKeyModal.close();
+        }
+
+        async function openVoiceSettingsModal() {
+            const currentOpenAI     = localStorage.getItem('abhyas_user_openai_key') || '';
+            const currentEleven     = localStorage.getItem('abhyas_user_eleven_key') || '';
+            const currentProvider   = localStorage.getItem('abhyas_tts_provider') || 'local';
+
             openaiKeyInput.value     = currentOpenAI;
             elevenKeyInput.value     = currentEleven;
             ttsProviderSelect.value  = currentProvider;
+
+            [openaiKeyInput, elevenKeyInput].forEach(i => i.type = 'password');
+            ['btnToggleOpenAIVisibility','btnToggleElevenVisibility']
+                .forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = '👁️';
+                });
+
+            document.getElementById('btnClearVoice').style.display = (currentOpenAI || currentEleven) ? 'block' : 'none';
+            
+            // Populate voice dropdown and handle selection states
+            await updateVoiceDropdown();
+            
+            voiceSettingsModal.showModal();
+        }
+
+        function closeVoiceSettingsModal() {
+            voiceSettingsModal.close();
+        }
+
+        function openLanguageSettingsModal() {
+            const currentLanguage   = localStorage.getItem('abhyas_language_pref') || 'hinglish';
+            const autoSpeakPref     = localStorage.getItem('abhyas_auto_speak') === 'false' ? 'false' : 'true';
 
             // Load and adapt custom language state
             if (['hinglish', 'english', 'hindi'].includes(currentLanguage.toLowerCase())) {
@@ -3346,23 +3440,15 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 ttsCustomLanguageInput.value = currentLanguage;
             }
 
-            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput, openaiKeyInput, elevenKeyInput].forEach(i => i.type = 'password');
-            ['btnToggleGeminiVisibility','btnToggleOpenRouterVisibility','btnToggleGroqVisibility','btnToggleCerebrasVisibility','btnToggleOpenAIVisibility','btnToggleElevenVisibility']
-                .forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.textContent = '👁️';
-                });
+            autoSpeakSelect.value = autoSpeakPref;
 
-            btnClearKey.style.display = (currentGemini || currentOpenRouter || currentGroq || currentCerebras || currentOpenAI || currentEleven) ? 'block' : 'none';
+            document.getElementById('btnClearLanguage').style.display = 'block';
             
-            // Populate voice dropdown and handle selection states
-            await updateVoiceDropdown();
-            
-            apiKeyModal.showModal();
+            languageSettingsModal.showModal();
         }
 
-        function closeApiKeyModal() {
-            apiKeyModal.close();
+        function closeLanguageSettingsModal() {
+            languageSettingsModal.close();
         }
 
         function toggleGroqVisibility() {
@@ -3628,15 +3714,103 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
             const rawOpenRouter = openRouterKeyInput.value.trim();
             const rawGroq       = groqKeyInput.value.trim();
             const rawCerebras   = cerebrasKeyInput.value.trim();
+
+            if (!rawGemini && !rawOpenRouter && !rawGroq && !rawCerebras) {
+                alert("Please enter at least one AI API key.");
+                return;
+            }
+
+            const parts = [];
+            rawGroq       ? (localStorage.setItem('abhyas_user_groq_key', rawGroq),       parts.push('⚡ Groq'))       : localStorage.removeItem('abhyas_user_groq_key');
+            rawGemini     ? (localStorage.setItem('abhyas_user_api_key', rawGemini),       parts.push('✨ Gemini'))     : localStorage.removeItem('abhyas_user_api_key');
+            rawCerebras   ? (localStorage.setItem('abhyas_user_cerebras_key', rawCerebras),parts.push('🧠 Cerebras'))  : localStorage.removeItem('abhyas_user_cerebras_key');
+            rawOpenRouter ? (localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter), parts.push('🌐 OpenRouter')) : localStorage.removeItem('abhyas_user_openrouter_key');
+
+            updateApiKeyBtnState();
+            closeApiKeyModal();
+
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'abhyas-line';
+            notifyDiv.style.color = 'var(--success)';
+            notifyDiv.innerHTML = `[SYSTEM]: AI credentials saved! Active integrations: <strong>${parts.join(', ') || 'None'}</strong>`;
+            terminalScreen.appendChild(notifyDiv);
+            terminalScreen.scrollTop = terminalScreen.scrollHeight;
+        }
+
+        function clearApiKey() {
+            ['abhyas_user_api_key','abhyas_user_openrouter_key','abhyas_user_groq_key','abhyas_user_cerebras_key']
+                .forEach(k => localStorage.removeItem(k));
+            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput].forEach(i => i.value = '');
+            
+            updateApiKeyBtnState();
+            closeApiKeyModal();
+
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'abhyas-line';
+            notifyDiv.style.color = 'var(--accent-secondary)';
+            notifyDiv.innerHTML = `[SYSTEM]: AI provider keys cleared.`;
+            terminalScreen.appendChild(notifyDiv);
+            terminalScreen.scrollTop = terminalScreen.scrollHeight;
+        }
+
+        function saveVoiceSettings() {
             const rawOpenAI     = openaiKeyInput.value.trim();
             const rawEleven     = elevenKeyInput.value.trim();
             const provider      = ttsProviderSelect.value;
-            let languagePref    = ttsLanguageSelect.value;
             let voice           = ttsVoiceSelect.value;
 
             if (voice === 'custom') {
                 voice = ttsCustomVoiceInput.value.trim();
             }
+
+            if (!rawOpenAI && !rawEleven && provider !== 'local') {
+                alert("Please enter OpenAI/ElevenLabs API keys, or set Active Voice Engine to Local.");
+                return;
+            }
+
+            const parts = [];
+            rawOpenAI     ? (localStorage.setItem('abhyas_user_openai_key', rawOpenAI),   parts.push('🗣️ OpenAI TTS')) : localStorage.removeItem('abhyas_user_openai_key');
+            rawEleven     ? (localStorage.setItem('abhyas_user_eleven_key', rawEleven),   parts.push('👤 ElevenLabs')) : localStorage.removeItem('abhyas_user_eleven_key');
+
+            localStorage.setItem('abhyas_tts_provider', provider);
+            if (voice) {
+                localStorage.setItem('abhyas_tts_voice', voice);
+            } else {
+                localStorage.removeItem('abhyas_tts_voice');
+            }
+
+            closeVoiceSettingsModal();
+
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'abhyas-line';
+            notifyDiv.style.color = 'var(--success)';
+            notifyDiv.innerHTML = `[SYSTEM]: Voice config saved! Provider: <strong>${provider}</strong>, Voice ID: <strong>${voice || 'default'}</strong>. Active Voice APIs: ${parts.join(', ') || 'None'}`;
+            terminalScreen.appendChild(notifyDiv);
+            terminalScreen.scrollTop = terminalScreen.scrollHeight;
+        }
+
+        function clearVoiceSettings() {
+            ['abhyas_user_openai_key','abhyas_user_eleven_key','abhyas_tts_provider','abhyas_tts_voice']
+                .forEach(k => localStorage.removeItem(k));
+            [openaiKeyInput, elevenKeyInput].forEach(i => i.value = '');
+            ttsProviderSelect.value = 'local';
+            ttsVoiceSelect.innerHTML = '';
+            ttsCustomVoiceInput.value = '';
+            ttsCustomVoiceInputGroup.style.display = 'none';
+            
+            closeVoiceSettingsModal();
+
+            const notifyDiv = document.createElement('div');
+            notifyDiv.className = 'abhyas-line';
+            notifyDiv.style.color = 'var(--accent-secondary)';
+            notifyDiv.innerHTML = `[SYSTEM]: Voice & speech preferences cleared.`;
+            terminalScreen.appendChild(notifyDiv);
+            terminalScreen.scrollTop = terminalScreen.scrollHeight;
+        }
+
+        function saveLanguageSettings() {
+            let languagePref    = ttsLanguageSelect.value;
+            const autoSpeakPref = autoSpeakSelect.value;
 
             if (languagePref === 'custom') {
                 languagePref = ttsCustomLanguageInput.value.trim();
@@ -3646,56 +3820,35 @@ Ask me anything — Tech, Science, Math, History, or Interview Prep!
                 }
             }
 
-            if (!rawGemini && !rawOpenRouter && !rawGroq && !rawCerebras && !rawOpenAI && !rawEleven && provider !== 'local') {
-                alert("Please enter at least one API key, or select Local NLP engine.");
-                return;
-            }
-
-            const parts = [];
-            rawGroq       ? (localStorage.setItem('abhyas_user_groq_key', rawGroq),       parts.push('⚡ Groq'))       : localStorage.removeItem('abhyas_user_groq_key');
-            rawGemini     ? (localStorage.setItem('abhyas_user_api_key', rawGemini),       parts.push('✨ Gemini'))     : localStorage.removeItem('abhyas_user_api_key');
-            rawCerebras   ? (localStorage.setItem('abhyas_user_cerebras_key', rawCerebras),parts.push('🧠 Cerebras'))  : localStorage.removeItem('abhyas_user_cerebras_key');
-            rawOpenRouter ? (localStorage.setItem('abhyas_user_openrouter_key', rawOpenRouter), parts.push('🌐 OpenRouter')) : localStorage.removeItem('abhyas_user_openrouter_key');
-            rawOpenAI     ? (localStorage.setItem('abhyas_user_openai_key', rawOpenAI),   parts.push('🗣️ OpenAI TTS')) : localStorage.removeItem('abhyas_user_openai_key');
-            rawEleven     ? (localStorage.setItem('abhyas_user_eleven_key', rawEleven),   parts.push('👤 ElevenLabs')) : localStorage.removeItem('abhyas_user_eleven_key');
-
-            localStorage.setItem('abhyas_tts_provider', provider);
             localStorage.setItem('abhyas_language_pref', languagePref);
-            if (voice) {
-                localStorage.setItem('abhyas_tts_voice', voice);
-            }
+            localStorage.setItem('abhyas_auto_speak', autoSpeakPref);
 
-            updateApiKeyBtnState();
-            closeApiKeyModal();
+            closeLanguageSettingsModal();
 
             const formattedLang = languagePref.charAt(0).toUpperCase() + languagePref.slice(1);
+            const autoSpeakText = autoSpeakPref === 'true' ? 'ENABLED' : 'DISABLED';
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--success)';
-            notifyDiv.innerHTML = `[SYSTEM]: Voice config saved! Provider: <strong>${provider}</strong>, Voice ID: <strong>${voice || 'default'}</strong>, Primary Language: <strong>${formattedLang}</strong>. Active API integrations: ${parts.join(', ') || 'None'}`;
+            notifyDiv.innerHTML = `[SYSTEM]: Language preference updated! Primary Language: <strong>${formattedLang}</strong> | Auto-Speak Response: <strong>${autoSpeakText}</strong>.`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
 
-        function clearApiKey() {
-            ['abhyas_user_api_key','abhyas_user_openrouter_key','abhyas_user_groq_key','abhyas_user_cerebras_key','abhyas_user_openai_key','abhyas_user_eleven_key','abhyas_tts_provider','abhyas_tts_voice','abhyas_language_pref']
-                .forEach(k => localStorage.removeItem(k));
-            [userApiKeyInput, openRouterKeyInput, groqKeyInput, cerebrasKeyInput, openaiKeyInput, elevenKeyInput].forEach(i => i.value = '');
-            ttsProviderSelect.value = 'local';
-            ttsVoiceSelect.innerHTML = '';
-            ttsCustomVoiceInput.value = '';
-            ttsCustomVoiceInputGroup.style.display = 'none';
+        function clearLanguageSettings() {
+            localStorage.removeItem('abhyas_language_pref');
+            localStorage.removeItem('abhyas_auto_speak');
             ttsLanguageSelect.value = 'hinglish';
+            autoSpeakSelect.value = 'true';
             ttsCustomLanguageInput.value = '';
             ttsCustomLanguageInputGroup.style.display = 'none';
             
-            updateApiKeyBtnState();
-            closeApiKeyModal();
+            closeLanguageSettingsModal();
 
             const notifyDiv = document.createElement('div');
             notifyDiv.className = 'abhyas-line';
             notifyDiv.style.color = 'var(--accent-secondary)';
-            notifyDiv.innerHTML = `[SYSTEM]: All credentials and voice preferences cleared. Add keys in settings to re-enable!`;
+            notifyDiv.innerHTML = `[SYSTEM]: Response language and Auto-Speak preferences reset to default (Hinglish | Speaker Enabled).`;
             terminalScreen.appendChild(notifyDiv);
             terminalScreen.scrollTop = terminalScreen.scrollHeight;
         }
